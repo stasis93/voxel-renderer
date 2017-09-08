@@ -1,0 +1,6 @@
+bin/
+obj/
+textures/
+voxel.cbp
+voxel.depend
+voxel.layout

@@ -1,9 +1,30 @@
 #version 330
 
 in vec4 texCoord;
+out vec4 color;
+uniform sampler2D blockTexture;
+
+const vec4 fog_color = vec4(0.4, 0.6, 0.8, 1.0);
+const float fog_density = .00003;
 
 void main()
 {
-	gl_FragColor = vec4(texCoord.w / 128.0f, texCoord.w / 256.0f, texCoord.w / 512.0f, 1.0f);
-	//gl_FragColor = vec4(1, 0, 1, 1);
+    vec2 texPos;
+
+    if (texCoord.w > 0)
+        texPos = vec2((fract(texCoord.x + texCoord.z) + (texCoord.w)) / 5.0f, texCoord.y);
+    else
+        texPos = vec2((fract(texCoord.x) - (texCoord.w)) / 5.0f, texCoord.z);
+
+    color = texture(blockTexture, texPos);
+
+    if (texCoord.w > 0)
+        color *= 0.65f;
+
+    if (color.a < 0.5f)
+        discard;
+
+    float z = gl_FragCoord.z / gl_FragCoord.w;
+    float fog = clamp(exp(-fog_density * z * z), 0.2, 1);
+    color = mix(fog_color, color, fog);
 }

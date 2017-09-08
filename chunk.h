@@ -5,16 +5,9 @@
 #include "constants.h"
 
 constexpr int CX = 16, CY = 16, CZ = 16;
+//extern const char transp_bit;
 
 class Superchunk;
-
-enum class BlockType : uint8_t
-{
-    EMPTY = 0,
-    GROUND = 128,
-    WATER = 200,
-    RESERVED = 255
-};
 
 struct Chunk
 {
@@ -26,6 +19,7 @@ struct Chunk
     void            update();
     void            render();
     static int      trianglesAdded;
+    static char     transp_bit;
 
 private:
     bool            m_changed {false};

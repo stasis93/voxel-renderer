@@ -22,6 +22,7 @@ const PerlinData& PerlinNoiseGenerator::generate(unsigned int height, unsigned i
     //m_data.allocate(height, width);
     m_data.reserve(height);
     m_data.resize(height);
+
     for (auto &row : m_data)
     {
         row.reserve(width);
@@ -126,7 +127,8 @@ void PerlinNoiseGenerator::scaleResult()
     float d = m_max_gen - m_min_gen;
     float range = m_max - m_min;
 
-    std::cout << "Generated range: [" << m_min_gen << ", " << m_max_gen << "]\nRequested range: [" << m_min << ", " << m_max << "]" << std::endl;
+    std::cout << "Generated range: [" << m_min_gen << ", " << m_max_gen
+              << "]\nRequested range: [" << m_min << ", " << m_max << "]" << std::endl;
 
     float k = (float)range / d;
     float avg_gen = (m_max_gen + m_min_gen) / 2.0f;

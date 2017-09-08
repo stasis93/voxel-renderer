@@ -5,6 +5,7 @@
 #include "utils.h"
 #include "random.h"
 #include "perlin.h"
+#include <SFML/Graphics/Image.hpp>
 
 
 Application::Application()
@@ -25,14 +26,15 @@ Application::Application()
                                         ShaderFiles::fragment_shader_chunk);
     m_chunk = std::make_unique<Superchunk>(*m_shader_chunk);
 
+    float max_y = (SCY * CY) / 1.5f - 1;
     PerlinNoiseGenerator gen;
     auto data1 = gen.generate(CX * SCX, // "height" (in 3D it's not height actually)
                               CZ * SCZ, // width
-                              1.0f, (float)(SCY * CY - 1), 4, 4);
+                              1.0f, max_y, 2, 4);
 
     auto data2 = gen.generate(CX * SCX, // "height" (in 3D it's not height actually)
                               CZ * SCZ, // width
-                              -10.0f, 10.0f, 16, 8);
+                              -5.0f, 5.0f, 16, 8);
     PerlinData data;
     data.resize(data1.size());
     for (auto &row : data)
@@ -42,17 +44,41 @@ Application::Application()
     for (auto x = 0u; x < data1[0].size(); x++)
     {
         auto val = data1[y][x] + data2[y][x];
-        data[y][x] = (val < 1.0f) ? 1.0f : (val > SCY * CY - 1) ? (SCY * CY - 1) : val;
+        data[y][x] = val < 1.0f ? 1.0f : val > max_y ? max_y : val;
     }
 
     for (auto x = 0; x < CX * SCX; x++)
     for (auto z = 0; z < CZ * SCZ; z++)
     for (auto y = 0; y < data[x][z]; y++)
     {
-        //std::cout << x << " " << y << " " << z << std::endl;
-        m_chunk->set(x, y, z, Random::intInRange(50, 150));
+        uint8_t val = 4;
+        if (val == 3)
+            val++;
+        m_chunk->set(x, y, z, val);
     }
 
+    for (auto y = 0; y < CY * SCY; y++)
+        m_chunk->set(15, y, 15, (uint8_t)3 | Chunk::transp_bit);
+//    m_chunk->set(0, 0, 0, 1);
+//    m_chunk->set(2, 0, 0, 3);
+//    m_chunk->set(4, 0, 0, 4);
+//    m_chunk->set(6, 0, 0, 4);
+
+    sf::Image img;
+    if (!img.loadFromFile("textures/blocks.png"))
+        std::cout << "Can't load block textures!" << std::endl;
+    img.flipVertically();
+
+    GLuint blk_tex_id;
+    glGenTextures(1, &blk_tex_id);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, blk_tex_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img.getSize().x, img.getSize().y, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.getPixelsPtr());
+    //glGenerateMipmap(GL_TEXTURE_2D);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    m_shader_chunk->use();
+    glUniform1i(glGetUniformLocation(m_shader_chunk->id(), "blockTexture"), 0);
 
     Utils::glCheckError();
 }

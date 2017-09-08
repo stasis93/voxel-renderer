@@ -4,7 +4,7 @@
 #include "chunk.h"
 
 
-constexpr int SCX = 32, SCY = 12, SCZ = 32;
+constexpr int SCX = 16, SCY = 4, SCZ = 16;
 
 class Shader;
 
