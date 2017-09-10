@@ -1,86 +1,166 @@
 #include "superchunk.h"
 #include <memory>
+#include <iostream>
 #include <cstring>
+#include <thread>
+#include <mingw.thread.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glad/glad.h>
 #include "shader.h"
+#include "heightmapprovider.h"
+#include "utils.h"
 
-Superchunk::Superchunk(Shader& shader)
+int ChunkManager::MAX_CHUNKS_LOADED = CY_MAX * 1000;
+int ChunkManager::MAX_CHUNKS_PER_FRAME = CY_MAX * 1;
+
+ChunkManager::ChunkManager(Shader& shader)
     : m_shader(shader)
 {
-    memset(m_chunks, 0, sizeof m_chunks);
 }
 
-Superchunk::~Superchunk()
+void ChunkManager::update(const Position3& playerPosition)
 {
-    for (auto x = 0; x < SCX; x++)
-    for (auto y = 0; y < SCY; y++)
-    for (auto z = 0; z < SCZ; z++)
-        if (m_chunks[x][y][z])
-            delete m_chunks[x][y][z];
+    m_renderList.clear();
+
+    std::vector<Position3> renderPositions;
+
+    int x0 = playerPosition.x / Blocks::CX - m_loadRadius;
+    int z0 = playerPosition.z / Blocks::CZ - m_loadRadius;
+
+    for (int x = x0; x <= x0 + 2 * m_loadRadius; x++)
+    {
+        int dx = x - playerPosition.x / Blocks::CX;
+
+        for (int z = z0; z <= z0 + 2 * m_loadRadius; z++)
+        {
+            int dz = z - playerPosition.z / Blocks::CZ;
+
+            if (dz * dz + dx * dx <= m_loadRadius * m_loadRadius)
+                renderPositions.emplace_back(x, 0, z);
+        }
+
+    }
+
+    m_chunksLoaded = 0;
+
+    for (const Position3 &pos : renderPositions)
+    {
+        auto it = m_chunkColumns.find(pos);
+        if (it != m_chunkColumns.end())
+            m_renderList.emplace_back(&it->second);
+        else
+        {
+            if (m_chunksLoaded == MAX_CHUNKS_PER_FRAME)
+                continue;
+
+            ChunkColumn newColumn;
+            newColumn.reserve(CY_MAX);
+
+            for (auto y = 0; y < CY_MAX; y++)
+                newColumn.emplace_back(*this, Position3 {pos.x, y, pos.z});
+
+
+            HeightMapProvider::fillChunkColumn(newColumn);
+
+            auto ins = m_chunkColumns.emplace(std::make_pair(pos, std::move(newColumn)));
+            assert(ins.second);
+            auto colPtr = &ins.first->second;
+            m_renderList.emplace_back(colPtr);
+            m_chunksLoaded += CY_MAX;
+        }
+    }
 }
 
-Chunk* Superchunk::getChunk(unsigned int cx, unsigned int cy, unsigned int cz)
+bool ChunkManager::tryUnloadAtPosition(const Position3& pos)
 {
-    assert(cx < SCX && cy < SCY && cz < SCZ);
+    // TODO
+}
 
-    if (!m_chunks[cx][cy][cz])
+void ChunkManager::unloadSpareChunkColumns()
+{
+    // TODO
+}
+
+Chunk* ChunkManager::getChunk(const Position3& index)
+{
+    if(!(index.y >= 0 && index.y < CY_MAX))
         return nullptr;
-    return m_chunks[cx][cy][cz];
+
+    ChunkColumn *column = getColumn({index.x, 0, index.z});
+    if (!column)
+        return nullptr;
+    return &(*column)[index.y];
 }
 
-uint8_t Superchunk::get(unsigned int x, unsigned int y, unsigned int z) const
+ChunkColumn* ChunkManager::getColumn(const Position3 &index)
 {
-    int cx, cy, cz;
+    auto it = m_chunkColumns.find(index);
 
-    cx = x / CX; x %= CX;
-    cy = y / CY; y %= CY;
-    cz = z / CZ; z %= CZ;
+    if (it == m_chunkColumns.end())
+        return nullptr;
 
-    assert(cx < SCX && cy < SCY && cz < SCZ);
-
-    if (!m_chunks[cx][cy][cz])
-        return 0;
-
-    return m_chunks[cx][cy][cz]->get(x, y, z);
+    return &it->second;
 }
 
-void Superchunk::set(unsigned int x, unsigned int y, unsigned int z, uint8_t type)
+uint8_t ChunkManager::get(const Position3& pos)
 {
-    int cx, cy, cz;
+    int cx = pos.x / Blocks::CX,
+        cy = pos.y / Blocks::CY,
+        cz = pos.z / Blocks::CZ;
 
-    cx = x / CX; x %= CX;
-    cy = y / CY; y %= CY;
-    cz = z / CZ; z %= CZ;
+    int x = pos.x % Blocks::CX,
+        y = pos.y % Blocks::CY,
+        z = pos.z % Blocks::CZ;
 
-    assert(cx < SCX && cy < SCY && cz < SCZ);
+    assert(cy >= 0 && cy < CY_MAX);
 
-    if (!m_chunks[cx][cy][cz])
-        m_chunks[cx][cy][cz] = new Chunk(this, cx, cy, cz);
+    Chunk *ch = getChunk({cx, cy, cz});
 
-    m_chunks[cx][cy][cz]->set(x, y, z, type);
+    if (!ch)
+        return (uint8_t)0;
+
+    return ch->get({x, y, z});
 }
 
-void Superchunk::render()
+void ChunkManager::set(const Position3& pos, uint8_t type)
 {
+    int cx = pos.x / Blocks::CX,
+        cy = pos.y / Blocks::CY,
+        cz = pos.z / Blocks::CZ;
+
+    int x = pos.x % Blocks::CX,
+        y = pos.y % Blocks::CY,
+        z = pos.z % Blocks::CZ;
+
+    assert(cy >= 0 && cy < CY_MAX);
+
+    Chunk *ch = getChunk({cx, cy, cz});
+
+    if (!ch)
+        return;
+
+    ch->set({x, y, z}, type);
+}
+
+void ChunkManager::render()
+{
+    using namespace Blocks;
     m_shader.use();
     glm::mat4 ident{1};
 
-    for (auto x = 0; x < SCX; x++)
-    for (auto y = 0; y < SCY; y++)
-    for (auto z = 0; z < SCZ; z++)
+    for (auto col : m_renderList)
+    for (Chunk &chunk : *col)
     {
-        if (m_chunks[x][y][z])
-        {
-            glm::mat4 model = glm::translate(glm::mat4(1), glm::vec3(x * CX, y * CY, z * CZ));
+        auto p = chunk.getPosition();
+        glm::mat4 model = glm::translate(glm::mat4(1),
+        glm::vec3(p.x * Blocks::CX, p.y * Blocks::CY, p.z * Blocks::CZ));
 
-            glUniformMatrix4fv(glGetUniformLocation(m_shader.id(), "model"),
-                               1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(glGetUniformLocation(m_shader.id(), "model"),
+                            1, GL_FALSE, glm::value_ptr(model));
 
-            m_chunks[x][y][z]->render();
-        }
+        chunk.render();
     }
 }
 

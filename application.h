@@ -34,12 +34,12 @@ private:
     bool                    m_running {false};
 
     std::unique_ptr<Shader> m_shader_chunk;
+    std::unique_ptr<ChunkManager> m_chunkManager;
+
     Camera                  m_camera;
 
     glm::mat4               m_proj,
                             m_view;
-
-    std::unique_ptr<Superchunk> m_chunk;
 
     Timer                   m_timer;
     float                   m_timeSlice {0};

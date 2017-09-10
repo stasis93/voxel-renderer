@@ -14,7 +14,7 @@ Camera::Camera(const glm::vec3 & position, float yaw, float pitch)
 
 void Camera::move(CameraMovement dir, float dt_sec)
 {
-    float vel = dt_sec * 50.0f;
+    float vel = dt_sec * 10.0f;
     switch (dir)
     {
     case CameraMovement::FORWARD:
@@ -49,6 +49,11 @@ void Camera::rotate(float offset_x, float offset_y)
 glm::mat4 Camera::getViewMatrix() const
 {
     return glm::lookAt(m_pos, m_pos + m_orientation, m_up);
+}
+
+const glm::vec3& Camera::getPosition() const
+{
+    return m_pos;
 }
 
 void Camera::update()

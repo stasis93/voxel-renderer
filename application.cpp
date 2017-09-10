@@ -4,7 +4,7 @@
 #include <iostream>
 #include "utils.h"
 #include "random.h"
-#include "perlin.h"
+#include "heightmapprovider.h"
 #include <SFML/Graphics/Image.hpp>
 
 
@@ -13,56 +13,22 @@ Application::Application()
                Consts::WINDOW_NAME,
                sf::Style::Default,
                sf::ContextSettings(24))
-    , m_camera(glm::vec3{0.0f, 0.0f, 0.0f},
-               0.0f, 0.0f)
+    , m_camera(glm::vec3{0.0f, 100.0f, 0.0f},
+               0.0f, -20.0f)
 {
     initGL();
     Random::init();
+    HeightMapProvider::init();
 
     m_window.setFramerateLimit(Consts::FRAMERATE_LIMIT);
     m_window.setMouseCursorGrabbed(true);
     m_window.setMouseCursorVisible(false);
     m_shader_chunk = std::make_unique<Shader>(ShaderFiles::vertex_shader_chunk,
                                         ShaderFiles::fragment_shader_chunk);
-    m_chunk = std::make_unique<Superchunk>(*m_shader_chunk);
 
-    float max_y = (SCY * CY) / 1.5f - 1;
-    PerlinNoiseGenerator gen;
-    auto data1 = gen.generate(CX * SCX, // "height" (in 3D it's not height actually)
-                              CZ * SCZ, // width
-                              1.0f, max_y, 2, 4);
 
-    auto data2 = gen.generate(CX * SCX, // "height" (in 3D it's not height actually)
-                              CZ * SCZ, // width
-                              -5.0f, 5.0f, 16, 8);
-    PerlinData data;
-    data.resize(data1.size());
-    for (auto &row : data)
-        row.resize(data1[0].size());
-
-    for (auto y = 0u; y < data1.size(); y++)
-    for (auto x = 0u; x < data1[0].size(); x++)
-    {
-        auto val = data1[y][x] + data2[y][x];
-        data[y][x] = val < 1.0f ? 1.0f : val > max_y ? max_y : val;
-    }
-
-    for (auto x = 0; x < CX * SCX; x++)
-    for (auto z = 0; z < CZ * SCZ; z++)
-    for (auto y = 0; y < data[x][z]; y++)
-    {
-        uint8_t val = 4;
-        if (val == 3)
-            val++;
-        m_chunk->set(x, y, z, val);
-    }
-
-    for (auto y = 0; y < CY * SCY; y++)
-        m_chunk->set(15, y, 15, (uint8_t)3 | Chunk::transp_bit);
-//    m_chunk->set(0, 0, 0, 1);
-//    m_chunk->set(2, 0, 0, 3);
-//    m_chunk->set(4, 0, 0, 4);
-//    m_chunk->set(6, 0, 0, 4);
+    /* some chunk manager initialization */
+    m_chunkManager = std::make_unique<ChunkManager>(*m_shader_chunk);
 
     sf::Image img;
     if (!img.loadFromFile("textures/blocks.png"))
@@ -138,10 +104,15 @@ void Application::update(float dt_sec)
 {
     handleKbd(dt_sec);
     handleMouse();
+    const glm::vec3 &camPos = m_camera.getPosition();
+    m_chunkManager->update({(int)camPos.x, (int)camPos.y, (int)camPos.z});
 }
 
 void Application::handleKbd(float dt)
 {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
+        dt *= 10.0f;
+
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
     {
         m_camera.move(CameraMovement::FORWARD, dt);
@@ -205,13 +176,13 @@ void Application::render()
     glUniformMatrix4fv(glGetUniformLocation(m_shader_chunk->id(), "view"), 1, GL_FALSE, glm::value_ptr(m_view));
 
     //Chunk::trianglesDrawn = 0;
-    m_chunk->render();
-    static bool showed {false};
-    if (!showed)
-    {
-        std::cout << "Triagle count: " << Chunk::trianglesAdded << std::endl;
-        showed = true;
-    }
+    m_chunkManager->render();
+//    static bool showed {false};
+//    if (!showed)
+//    {
+//        std::cout << "Triagle count: " << Chunk::trianglesAdded << std::endl;
+//        showed = true;
+//    }
 
     m_window.display();
 

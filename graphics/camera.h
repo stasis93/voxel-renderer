@@ -20,6 +20,7 @@ public:
     void move(CameraMovement dir, float offset);
     void rotate(float offset_x, float offset_y);
     glm::mat4 getViewMatrix() const;
+    const glm::vec3& getPosition() const;
 
 private:
     void update();
