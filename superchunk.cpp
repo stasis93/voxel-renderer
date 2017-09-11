@@ -13,8 +13,9 @@
 #include "utils.h"
 
 int ChunkManager::MAX_CHUNK_COLUMNS_LOADED;
-int ChunkManager::MAX_CHUNK_COLS_PER_FRAME = 1;
-int ChunkManager::MAX_EXTRA_UPDATES_PER_FRAME = 1;
+int ChunkManager::MAX_CHUNK_COLS_PER_FRAME = 2;
+int ChunkManager::MAX_UPDATES_PER_FRAME = 15;
+int ChunkManager::MAX_EXTRA_UPDATES_PER_FRAME = 2;
 
 ChunkManager::ChunkManager(Shader& shader)
     : m_loadRadius(25)
@@ -22,23 +23,15 @@ ChunkManager::ChunkManager(Shader& shader)
 {
     m_renderList.reserve(m_loadRadius * m_loadRadius);
     MAX_CHUNK_COLUMNS_LOADED = 15 * m_loadRadius * m_loadRadius;
-
-    //m_loadTimer.restart();
 }
 
-void ChunkManager::update(const Position3& playerPosition)
+void ChunkManager::update(const Position3 &playerPosition)
 {
     // if position is same and nothing to load, let's re-update chunks to remove extra vertices between chunks
     if (playerPosition.x == m_oldPlayerPos.x &&
         playerPosition.z == m_oldPlayerPos.z &&
         m_loadingDone)
     {
-//        if (m_initLoadTime == 0.0f && m_adjacentUpdateQueue.empty())
-//        {
-//            m_initLoadTime = m_loadTimer.getElapsedSecs();
-//            std::cout << "Initial loading finished in " << m_initLoadTime << " seconds." << std::endl;
-//        }
-
         updateAdjacent();
         return;
     }
@@ -48,8 +41,7 @@ void ChunkManager::update(const Position3& playerPosition)
 
     m_renderList.clear();
 
-
-    // get positions for chunk column rendering
+    // get positions for chunk column _potential_ rendering
     std::vector<Position3> renderPositions;
 
     int x0 = playerPosition.x / Blocks::CX - m_loadRadius;
@@ -233,11 +225,17 @@ void ChunkManager::set(const Position3& pos, uint8_t type)
     ch->set({x, y, z}, type);
 }
 
-void ChunkManager::render()
+void ChunkManager::render(const glm::mat4 &proj_view)
 {
-    using namespace Blocks;
+    constexpr static float diam = std::sqrt(Blocks::CX * Blocks::CX + Blocks::CY * Blocks::CY + Blocks::CZ * Blocks::CZ);
+    int chunksRendered = 0;
+
     m_shader.use();
     glm::mat4 ident{1};
+
+    glm::vec4 chunkCenter;
+
+    int chunksUpdated = 0;
 
     for (auto col : m_renderList)
     for (Chunk &chunk : *col)
@@ -249,10 +247,37 @@ void ChunkManager::render()
         glm::mat4 model = glm::translate(glm::mat4(1),
         glm::vec3(p.x * Blocks::CX, p.y * Blocks::CY, p.z * Blocks::CZ));
 
+        // culling (https://en.wikibooks.org/wiki/OpenGL_Programming/Glescraft_5)
+        // fails if move far from origin. Need to find better way
+
+        chunkCenter = {(float)p.x + Blocks::CX / 2.0f, (float)p.y + Blocks::CY / 2.0f, (float)p.z + Blocks::CZ / 2.0f, 1.0f};
+        chunkCenter = proj_view * model * chunkCenter;
+        chunkCenter.x /= chunkCenter.w;
+        chunkCenter.y /= chunkCenter.w;
+
+        float d = diam / std::fabs(chunkCenter.w);
+
+        if (chunkCenter.z < -2*diam)
+            continue;
+
+        if (std::fabs(chunkCenter.x) > 1.0f + 2*d || std::fabs(chunkCenter.y) > 1.0f + 2*d)
+            continue;
+
         glUniformMatrix4fv(glGetUniformLocation(m_shader.id(), "model"),
                             1, GL_FALSE, glm::value_ptr(model));
 
-        chunk.render();
+        if (chunk.changed() && chunksUpdated < MAX_UPDATES_PER_FRAME)
+        {
+            chunk.render();
+            chunksRendered++;
+            chunksUpdated++;
+        } else
+        if (!chunk.changed())
+        {
+            chunk.render();
+            chunksRendered++;
+        }
     }
+    std::cout << "Chunks rendered: " << chunksRendered << std::endl;
 }
 

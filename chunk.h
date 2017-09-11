@@ -34,6 +34,7 @@ struct Chunk
     void            render();
     const Position3& getPosition() const;
     bool            empty();
+    bool            changed();
 
 
     static char     transp_bit;

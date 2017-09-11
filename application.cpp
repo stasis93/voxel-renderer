@@ -14,11 +14,11 @@ Application::Application()
                sf::Style::Default,
                sf::ContextSettings(24))
     , m_camera(glm::vec3{0.0f, 100.0f, 0.0f},
-               0.0f, -20.0f)
+               180.0f, -20.0f)
 {
     initGL();
     Random::init();
-    HeightMapProvider::init();
+    HeightMapProvider::init(std::time(nullptr));
 
     m_window.setFramerateLimit(Consts::FRAMERATE_LIMIT);
     m_window.setMouseCursorGrabbed(true);
@@ -168,23 +168,15 @@ void Application::render()
     glClearColor(0.1f, 0.2f, 0.4f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    m_proj = glm::perspective(glm::radians(60.0f), m_window.getSize().x / (float)m_window.getSize().y, 0.1f, 500.0f);
-    m_view = m_camera.getViewMatrix();
-
     m_shader_chunk->use();
     glUniformMatrix4fv(glGetUniformLocation(m_shader_chunk->id(), "projection"), 1, GL_FALSE, glm::value_ptr(m_proj));
     glUniformMatrix4fv(glGetUniformLocation(m_shader_chunk->id(), "view"), 1, GL_FALSE, glm::value_ptr(m_view));
 
-    //Chunk::trianglesDrawn = 0;
-    m_chunkManager->render();
-//    static bool showed {false};
-//    if (!showed)
-//    {
-//        std::cout << "Triagle count: " << Chunk::trianglesAdded << std::endl;
-//        showed = true;
-//    }
+    m_proj = glm::perspective(glm::radians(60.0f), m_window.getSize().x / (float)m_window.getSize().y, 0.1f, 500.0f);
+    m_view = m_camera.getViewMatrix();
+
+    m_chunkManager->render(m_proj * m_view);
 
     m_window.display();
-
     Utils::glCheckError();
 }

@@ -12,9 +12,9 @@ void main()
     vec2 texPos;
 
     if (texCoord.w > 0)
-        texPos = vec2((fract(texCoord.x + texCoord.z) + (texCoord.w)) / 5.0f, texCoord.y);
+        texPos = vec2((fract(texCoord.x + texCoord.z) + (texCoord.w)) / 6.0f, texCoord.y);
     else
-        texPos = vec2((fract(texCoord.x) - (texCoord.w)) / 5.0f, texCoord.z);
+        texPos = vec2((fract(texCoord.x) - (texCoord.w)) / 6.0f, texCoord.z);
 
     color = texture(blockTexture, texPos);
 

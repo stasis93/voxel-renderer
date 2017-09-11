@@ -2,13 +2,13 @@
 #define SUPERCHUNK_H_INCLUDED
 
 #include "chunk.h"
-//#include "timer.h"
 #include <unordered_map>
-//#include <map>
 #include <vector>
 #include <queue>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
-constexpr int CY_MAX = 8;
+constexpr int CY_MAX = 4;
 
 using ChunkColumn = std::vector<Chunk>;
 using ChunkColumnMap = std::unordered_map<Position3, ChunkColumn>;
@@ -41,7 +41,7 @@ struct ChunkManager
     void            set(const Position3& pos, uint8_t type);
 
     void            update(const Position3 &playerPosition);
-    void            render();
+    void            render(const glm::mat4 &proj_view);
 
     Chunk*          getChunk(const Position3& index);
 
@@ -55,6 +55,7 @@ private:
 
     static int      MAX_CHUNK_COLUMNS_LOADED;
     static int      MAX_CHUNK_COLS_PER_FRAME;
+    static int      MAX_UPDATES_PER_FRAME;
     static int      MAX_EXTRA_UPDATES_PER_FRAME;
 
 private:
@@ -69,12 +70,6 @@ private:
     Shader                      &m_shader;
 
     bool                        m_loadingDone {false};
-
-//    Timer                       m_loadTimer;
-//    float                       m_initLoadTime {0};
-
-
-    // TODO: unloading chunks if loaded count > MAX_CHUNKS_LOADED
 };
 
 #endif // SUPERCHUNK_H_INCLUDED

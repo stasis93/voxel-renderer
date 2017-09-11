@@ -29,9 +29,6 @@ bool Position3::operator==(const Position3 &other) const
     return x == other.x && y == other.y && z == other.z;
 }
 
-
-
-
 Chunk::Chunk(ChunkManager &manager, Position3 index)
     : m_parent(manager), m_pos(index)
 {
@@ -51,6 +48,10 @@ bool Chunk::empty()
     return m_empty;
 }
 
+bool Chunk::changed()
+{
+    return m_changed;
+}
 
 uint8_t Chunk::get(const Position3 &pos) const
 {

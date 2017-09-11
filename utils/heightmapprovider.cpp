@@ -20,6 +20,8 @@ void init(int seed)
     nmBuilder.SetDestSize(Blocks::CX, Blocks::CZ);
 }
 
+uint8_t chooseBlock(float c);
+
 void fillChunkColumn(std::vector<Chunk> &column)
 {
     auto colPos = column[0].getPosition();
@@ -32,7 +34,6 @@ void fillChunkColumn(std::vector<Chunk> &column)
 
     for (int z = 0; z < Blocks::CZ; z++)
     {
-
         const float *row = nm.GetConstSlabPtr(z);
         for (int x = 0; x < Blocks::CX; x++)
         {
@@ -46,7 +47,24 @@ void fillChunkColumn(std::vector<Chunk> &column)
                 Chunk &chunk = column[chunk_y];
                 chunk.set({x, y % Blocks::CY, z}, 4);
             }
+//            Chunk &chunk = column[(val - 1) / Blocks::CY];
+//            chunk.set({x, (val - 1) % Blocks::CY, z}, chooseBlock((float)val / (float)y_max));
         }
     }
+}
+
+uint8_t chooseBlock(float c)
+{
+    float grass1 = 0.3f,
+          grass2 = 0.5f,
+          stone  = 0.75f,
+          snow   = 0.9f;
+
+    uint8_t block = 5;
+    if (c < grass1) block = 1;
+    else if (c < grass2) block = 2;
+    else if (c < stone) block = 4;
+    else if (c < snow) block = 5;
+    return block;
 }
 }
