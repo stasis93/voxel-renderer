@@ -4,7 +4,7 @@ in vec4 texCoord;
 out vec4 color;
 uniform sampler2D blockTexture;
 
-const vec4 fog_color = vec4(0.4, 0.6, 0.8, 1.0);
+const vec4 fog_color = vec4(0.1f, 0.2f, 0.4f, 1.0f);
 const float fog_density = .00003;
 
 void main()

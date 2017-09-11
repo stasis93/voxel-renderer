@@ -9,7 +9,7 @@ noise::module::Perlin perlin;
 noise::utils::NoiseMap nm;
 noise::utils::NoiseMapBuilderPlane nmBuilder;
 
-double winSz = 0.05;
+double winSz = 0.075;
 
 void init(int seed)
 {

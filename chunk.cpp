@@ -24,13 +24,9 @@ bool operator<(const Position3 &p1, const Position3 &p2)
     return p1.x < p2.x;
 }
 
-bool operator<(const Position2 &p1, const Position2 &p2)
+bool Position3::operator==(const Position3 &other) const
 {
-    if (p1.y < p2.y)
-        return true;
-    if (p1.y > p2.y)
-        return false;
-    return p1.x < p2.x;
+    return x == other.x && y == other.y && z == other.z;
 }
 
 
@@ -50,6 +46,12 @@ Chunk::~Chunk()
     glDeleteBuffers(1, &m_vbo);
 }
 
+bool Chunk::empty()
+{
+    return m_empty;
+}
+
+
 uint8_t Chunk::get(const Position3 &pos) const
 {
     assert(pos.x < CX && pos.y < CY && pos.z < CZ);
@@ -61,6 +63,8 @@ void Chunk::set(const Position3 &pos, uint8_t type)
     assert(pos.x < CX && pos.y < CY && pos.z < CZ);
     m_blocks[pos.x][pos.y][pos.z] = type;
     m_changed = true;
+    if (type)
+        m_empty = false;
 }
 
 void Chunk::update()
@@ -187,6 +191,8 @@ void Chunk::update()
         }
     }
     m_elements = i;
+    if (m_elements > 0)
+        m_empty = false;
 
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
     glBufferData(GL_ARRAY_BUFFER, m_elements * sizeof *vertices, vertices, GL_STATIC_DRAW);
