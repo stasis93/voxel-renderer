@@ -114,24 +114,16 @@ void Application::handleKbd(float dt)
         dt *= 10.0f;
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-    {
         m_camera.move(CameraMovement::FORWARD, dt);
-    }
     else
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-    {
         m_camera.move(CameraMovement::BACK, dt);
-    }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-    {
         m_camera.move(CameraMovement::LEFT, dt);
-    }
     else
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-    {
         m_camera.move(CameraMovement::RIGHT, dt);
-    }
 }
 
 void Application::handleMouse()
