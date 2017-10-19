@@ -30,7 +30,7 @@ struct Chunk
 
     uint8_t         get(const Position3 &pos) const;
     void            set(const Position3 &pos, uint8_t type);
-    void            update();
+    void            updateVBO();
     void            render();
     const Position3& getPosition() const;
     bool            empty();

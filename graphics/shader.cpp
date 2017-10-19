@@ -20,28 +20,28 @@ Shader::Shader(char const * vertexFilename, char const * fragmentFilename)
     char const * vsTextPtr = vsText.c_str();
     char const * fsTextPtr = fsText.c_str();
 
-    unsigned int vertex_id = glCreateShader(GL_VERTEX_SHADER);
-    unsigned int fragment_id = glCreateShader(GL_FRAGMENT_SHADER);
+    m_vertex_id = glCreateShader(GL_VERTEX_SHADER);
+    m_fragment_id = glCreateShader(GL_FRAGMENT_SHADER);
 
-    glShaderSource(vertex_id, 1, &vsTextPtr, NULL);
-    glCompileShader(vertex_id);
+    glShaderSource(m_vertex_id, 1, &vsTextPtr, NULL);
+    glCompileShader(m_vertex_id);
 
-    checkShaderStatus(vertex_id);
+    checkShaderStatus(m_vertex_id);
 
-    glShaderSource(fragment_id, 1, &fsTextPtr, NULL);
-    glCompileShader(fragment_id);
+    glShaderSource(m_fragment_id, 1, &fsTextPtr, NULL);
+    glCompileShader(m_fragment_id);
 
-    checkShaderStatus(fragment_id);
+    checkShaderStatus(m_fragment_id);
 
     m_id = glCreateProgram();
-    glAttachShader(m_id, vertex_id);
-    glAttachShader(m_id, fragment_id);
+    glAttachShader(m_id, m_vertex_id);
+    glAttachShader(m_id, m_fragment_id);
 
     glLinkProgram(m_id);
     checkShaderProgramStatus(m_id);
 
-    glDeleteShader(vertex_id);
-    glDeleteShader(fragment_id);
+    glDeleteShader(m_vertex_id);
+    glDeleteShader(m_fragment_id);
 
     Utils::glCheckError();
 }
@@ -49,6 +49,18 @@ Shader::Shader(char const * vertexFilename, char const * fragmentFilename)
 Shader::~Shader()
 {
     //PRINT_FUNC();
+    glDetachShader(m_id, m_vertex_id);
+    Utils::glCheckError();
+
+    glDetachShader(m_id, m_fragment_id);
+    Utils::glCheckError();
+
+//    glDeleteShader(m_vertex_id);
+//    Utils::glCheckError();
+
+//    glDeleteShader(m_fragment_id);
+//    Utils::glCheckError();
+
     glDeleteProgram(m_id);
     Utils::glCheckError();
 }

@@ -16,6 +16,8 @@ private:
 
 private:
     unsigned int m_id; // Shader program id
+    unsigned int m_vertex_id;
+    unsigned int m_fragment_id;
 };
 
 

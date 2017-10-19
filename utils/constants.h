@@ -18,6 +18,9 @@ namespace ShaderFiles
 
     extern char const * const vertex_shader_chunk;
     extern char const * const fragment_shader_chunk;
+
+    extern char const * const vertex_shader_frustrum;
+    extern char const * const fragment_shader_frustrum;
 }
 
 #endif // CONSTANTS_H_INCLUDED

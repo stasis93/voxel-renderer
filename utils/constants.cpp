@@ -2,8 +2,8 @@
 
 namespace Consts
 {
-    const unsigned int  WINDOW_WIDTH = 1024,
-                        WINDOW_HEIGHT = 768;
+    const unsigned int  WINDOW_WIDTH = 1280,
+                        WINDOW_HEIGHT = 720;
 
     const char * const WINDOW_NAME = "Voxel rendering!";
 
@@ -18,4 +18,7 @@ namespace ShaderFiles
 
     char const * const vertex_shader_chunk = "shaders/chunk_vs.glsl";
     char const * const fragment_shader_chunk = "shaders/chunk_fs.glsl";
+
+    char const * const vertex_shader_frustrum = "shaders/frustrum_vs.glsl";
+    char const * const fragment_shader_frustrum = "shaders/frustrum_fs.glsl";
 }

@@ -51,11 +51,6 @@ glm::mat4 Camera::getViewMatrix() const
     return glm::lookAt(m_pos, m_pos + m_orientation, m_up);
 }
 
-const glm::vec3& Camera::getPosition() const
-{
-    return m_pos;
-}
-
 void Camera::update()
 {
     m_orientation.x = std::cos(glm::radians(m_pitch)) * std::cos(glm::radians(m_yaw));

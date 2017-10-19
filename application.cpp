@@ -25,10 +25,12 @@ Application::Application()
     m_window.setMouseCursorVisible(false);
     m_shader_chunk = std::make_unique<Shader>(ShaderFiles::vertex_shader_chunk,
                                         ShaderFiles::fragment_shader_chunk);
+    m_frustrum = std::make_unique<Frustrum>();
 
 
     /* some chunk manager initialization */
     m_chunkManager = std::make_unique<ChunkManager>(*m_shader_chunk);
+    m_chunkManager->setFrustrum(*m_frustrum);
 
     sf::Image img;
     if (!img.loadFromFile("textures/blocks.png"))
@@ -72,7 +74,6 @@ void Application::run()
         for (; m_timeSlice > Consts::FIXED_TIMESTEP;
                m_timeSlice -= Consts::FIXED_TIMESTEP)
             update(Consts::FIXED_TIMESTEP);
-
         render();
     }
 }
@@ -160,14 +161,24 @@ void Application::render()
     glClearColor(0.1f, 0.2f, 0.4f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    m_proj = glm::perspective(glm::radians(40.0f), m_window.getSize().x / (float)m_window.getSize().y, 0.1f, 500.0f);
+    m_view = m_camera.getViewMatrix();
+    auto proj_x_view = m_proj * m_view;
+
+    m_frustrum->updatePlanes(m_camera.getPosition(), m_camera.getDirection(),
+                            m_camera.getUp(), m_camera.getRight(),
+                            glm::radians(40.0f), m_window.getSize().x / (float)m_window.getSize().y, 0.1f, 500.0f);
+//    m_frustrum->updateMatrices(proj_x_view);
+//    m_frustrum->render();
+
+
     m_shader_chunk->use();
     glUniformMatrix4fv(glGetUniformLocation(m_shader_chunk->id(), "projection"), 1, GL_FALSE, glm::value_ptr(m_proj));
     glUniformMatrix4fv(glGetUniformLocation(m_shader_chunk->id(), "view"), 1, GL_FALSE, glm::value_ptr(m_view));
 
-    m_proj = glm::perspective(glm::radians(60.0f), m_window.getSize().x / (float)m_window.getSize().y, 0.1f, 500.0f);
-    m_view = m_camera.getViewMatrix();
 
-    m_chunkManager->render(m_proj * m_view);
+
+    m_chunkManager->render(proj_x_view);
 
     m_window.display();
     Utils::glCheckError();

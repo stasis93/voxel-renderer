@@ -8,10 +8,12 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-constexpr int CY_MAX = 4;
+constexpr int CY_MAX = 6;
 
 using ChunkColumn = std::vector<Chunk>;
 using ChunkColumnMap = std::unordered_map<Position3, ChunkColumn>;
+
+class Frustrum;
 
 namespace std
 {
@@ -42,6 +44,7 @@ struct ChunkManager
 
     void            update(const Position3 &playerPosition);
     void            render(const glm::mat4 &proj_view);
+    void            setFrustrum(const Frustrum& frustrum);
 
     Chunk*          getChunk(const Position3& index);
 
@@ -70,6 +73,7 @@ private:
     Shader                      &m_shader;
 
     bool                        m_loadingDone {false};
+    const Frustrum*             m_frustrum {nullptr};
 };
 
 #endif // SUPERCHUNK_H_INCLUDED

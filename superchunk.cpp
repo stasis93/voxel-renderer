@@ -10,18 +10,19 @@
 #include "shader.h"
 #include "heightmapprovider.h"
 #include "utils.h"
+#include "frustrum.h"
 
 int ChunkManager::MAX_CHUNK_COLUMNS_LOADED;
-int ChunkManager::MAX_CHUNK_COLS_PER_FRAME = 2;
-int ChunkManager::MAX_UPDATES_PER_FRAME = 10;
-int ChunkManager::MAX_EXTRA_UPDATES_PER_FRAME = 1;
+int ChunkManager::MAX_CHUNK_COLS_PER_FRAME = 4;
+int ChunkManager::MAX_UPDATES_PER_FRAME = 15;
+int ChunkManager::MAX_EXTRA_UPDATES_PER_FRAME = 4;
 
 ChunkManager::ChunkManager(Shader& shader)
-    : m_loadRadius(15)
+    : m_loadRadius(25)
     , m_shader(shader)
 {
     m_renderList.reserve(m_loadRadius * m_loadRadius);
-    MAX_CHUNK_COLUMNS_LOADED = 5 * m_loadRadius * m_loadRadius;
+    MAX_CHUNK_COLUMNS_LOADED = 10 * m_loadRadius * m_loadRadius;
 }
 
 void ChunkManager::update(const Position3 &playerPosition)
@@ -56,7 +57,7 @@ void ChunkManager::update(const Position3 &playerPosition)
                 renderPositions.emplace_back(x, 0, z);
         }
     }
-
+    std::cout << m_renderList.size() << std::endl;
     // fill render list (find in map or load if not present)
     m_chunkColsLoaded = 0;
 
@@ -103,7 +104,7 @@ void ChunkManager::update(const Position3 &playerPosition)
     if (m_chunkColsLoaded == 0)
     {
         m_loadingDone = true;
-        std::cout << "Chunk columns held in std::map: " << m_chunkColumns.size() << std::endl;
+        std::cout << "Chunk columns loaded: " << m_chunkColumns.size() << std::endl;
         std::cout << "Adjacent column updates queued: " << m_adjacentUpdateQueue.size() << std::endl;
     }
     unloadSpareChunkColumns();
@@ -121,7 +122,7 @@ void ChunkManager::updateAdjacent()
         if (col)
         {
             for (Chunk &c : *col)
-            c.update();
+            c.updateVBO();
             updated++;
         }
         m_adjacentUpdateQueue.pop();
@@ -222,11 +223,10 @@ void ChunkManager::set(const Position3& pos, uint8_t type)
     ch->set({x, y, z}, type);
 }
 
-void ChunkManager::render(const glm::mat4 &proj_view)
+void ChunkManager::render(const glm::mat4 &/*proj_view*/)
 {
-    int chunksRendered = 0;
     m_shader.use();
-//    glm::vec4 chunkCenter;
+
     int chunksUpdated = 0;
 
     for (auto col : m_renderList)
@@ -237,43 +237,25 @@ void ChunkManager::render(const glm::mat4 &proj_view)
 
         auto p = chunk.getPosition();
         glm::mat4 model = glm::translate(glm::mat4(1), glm::vec3(p.x * Blocks::CX, p.y * Blocks::CY, p.z * Blocks::CZ));
+        glUniformMatrix4fv(glGetUniformLocation(m_shader.id(), "model"), 1, GL_FALSE, glm::value_ptr(model));
 
-        ///TODO: Frustrum culling
-
-        // culling (https://en.wikibooks.org/wiki/OpenGL_Programming/Glescraft_5)
-        // fails if move far from origin. Need to find better way
-
-//        constexpr static float diam = std::sqrt(Blocks::CX * Blocks::CX + Blocks::CY * Blocks::CY + Blocks::CZ * Blocks::CZ);
-//        //constexpr static float diam = std::sqrt(1.0f + 1.0f + 1.0f);
-//
-//        chunkCenter = glm::vec4{p.x + 0.5f, p.y + 0.5f, p.z + 0.5f, 1.0f};
-//        chunkCenter = proj_view * model * chunkCenter;
-//        chunkCenter.x /= chunkCenter.w;
-//        chunkCenter.y /= chunkCenter.w;
-//
-//        float d = diam / std::fabs(chunkCenter.w);
-//
-//        if (chunkCenter.z < -diam)
-//            continue;
-//
-//        if (std::fabs(chunkCenter.x) > d + 1.0f || std::fabs(chunkCenter.y) > d + 1.0f)
-//            continue;
-
-        glUniformMatrix4fv(glGetUniformLocation(m_shader.id(), "model"),
-                            1, GL_FALSE, glm::value_ptr(model));
-
+        if (m_frustrum)
+        {
+            constexpr static float chunkRad = std::sqrt(Blocks::CX * Blocks::CX + Blocks::CY * Blocks::CY + Blocks::CZ * Blocks::CZ) / 2.0f;
+            glm::vec3 chunkCenter{(p.x + 0.5f) * Blocks::CX, (p.y + 0.5f) * Blocks::CY, (p.z + 0.5f) * Blocks::CZ};
+            if (Frustrum::Outside == m_frustrum->checkSphere(chunkCenter, chunkRad))
+                continue;
+        }
         if (chunk.changed() && chunksUpdated < MAX_UPDATES_PER_FRAME)
         {
-            chunk.render();
-            chunksRendered++;
+            chunk.updateVBO();
             chunksUpdated++;
-        } else
-        if (!chunk.changed())
-        {
-            chunk.render();
-            chunksRendered++;
         }
+        chunk.render();
     }
-//    std::cout << "Chunks rendered: " << chunksRendered << std::endl;
 }
 
+void ChunkManager::setFrustrum(const Frustrum& frustrum)
+{
+    m_frustrum = &frustrum;
+}

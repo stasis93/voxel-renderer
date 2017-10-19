@@ -32,14 +32,12 @@ bool Position3::operator==(const Position3 &other) const
 Chunk::Chunk(ChunkManager &manager, Position3 index)
     : m_parent(manager), m_pos(index)
 {
-    //PRINT_FUNC();
     memset(m_blocks, 0, sizeof(m_blocks));
     glGenBuffers(1, &m_vbo);
 }
 
 Chunk::~Chunk()
 {
-    //PRINT_FUNC();
     glDeleteBuffers(1, &m_vbo);
 }
 
@@ -68,11 +66,8 @@ void Chunk::set(const Position3 &pos, uint8_t type)
         m_empty = false;
 }
 
-void Chunk::update()
+void Chunk::updateVBO()
 {
-    m_changed = false;
-
-    // fill VBO
     byte4 vertices[CX * CY * CZ * 6 * 6];
     int i = 0;
 
@@ -197,17 +192,14 @@ void Chunk::update()
 
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
     glBufferData(GL_ARRAY_BUFFER, m_elements * sizeof *vertices, vertices, GL_STATIC_DRAW);
-    //glVertexAttribPointer(0, 4, GL_UNSIGNED_BYTE, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
     Utils::glCheckError();
+
+    m_changed = false;
 }
 
 void Chunk::render()
 {
-    //PRINT_FUNC();
-    if (m_changed)
-        update();
-    // render VBO
     if(!m_elements)
         return;
 

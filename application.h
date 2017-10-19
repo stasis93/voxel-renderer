@@ -9,6 +9,7 @@
 #include "camera.h"
 #include "superchunk.h"
 #include "timer.h"
+#include "frustrum.h"
 
 class Application
 {
@@ -35,6 +36,7 @@ private:
 
     std::unique_ptr<Shader> m_shader_chunk;
     std::unique_ptr<ChunkManager> m_chunkManager;
+    std::unique_ptr<Frustrum> m_frustrum;
 
     Camera                  m_camera;
 
