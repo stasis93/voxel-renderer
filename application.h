@@ -34,9 +34,9 @@ private:
     sf::Window              m_window;
     bool                    m_running {false};
 
-    std::unique_ptr<Shader> m_shader_chunk;
+    Shader                  m_shader_chunk;
     std::unique_ptr<ChunkManager> m_chunkManager;
-    std::unique_ptr<Frustrum> m_frustrum;
+    Frustrum                m_frustrum;
 
     Camera                  m_camera;
 

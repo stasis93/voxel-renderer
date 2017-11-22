@@ -5,13 +5,11 @@
 #include "utils.h"
 
 
-#include "glad/glad.h"
-#include <string>
-
-
-Shader::Shader(char const * vertexFilename, char const * fragmentFilename)
+void Shader::load(char const* vertexFilename, char const* fragmentFilename)
 {
-    //PRINT_FUNC();
+    if (m_id != 0)
+        cleanUp();
+
     std::string vsText, fsText;
 
     vsText = Utils::getTextFromFile(vertexFilename);
@@ -20,64 +18,56 @@ Shader::Shader(char const * vertexFilename, char const * fragmentFilename)
     char const * vsTextPtr = vsText.c_str();
     char const * fsTextPtr = fsText.c_str();
 
-    m_vertex_id = glCreateShader(GL_VERTEX_SHADER);
-    m_fragment_id = glCreateShader(GL_FRAGMENT_SHADER);
+    unsigned int vertex_id = glCreateShader(GL_VERTEX_SHADER);
+    unsigned int fragment_id = glCreateShader(GL_FRAGMENT_SHADER);
 
-    glShaderSource(m_vertex_id, 1, &vsTextPtr, NULL);
-    glCompileShader(m_vertex_id);
+    glShaderSource(vertex_id, 1, &vsTextPtr, NULL);
+    glCompileShader(vertex_id);
 
-    checkShaderStatus(m_vertex_id);
+    checkShaderStatus(vertex_id);
 
-    glShaderSource(m_fragment_id, 1, &fsTextPtr, NULL);
-    glCompileShader(m_fragment_id);
+    glShaderSource(fragment_id, 1, &fsTextPtr, NULL);
+    glCompileShader(fragment_id);
 
-    checkShaderStatus(m_fragment_id);
+    checkShaderStatus(fragment_id);
 
     m_id = glCreateProgram();
-    glAttachShader(m_id, m_vertex_id);
-    glAttachShader(m_id, m_fragment_id);
+    glAttachShader(m_id, vertex_id);
+    glAttachShader(m_id, fragment_id);
 
     glLinkProgram(m_id);
     checkShaderProgramStatus(m_id);
 
-    glDeleteShader(m_vertex_id);
-    glDeleteShader(m_fragment_id);
+    glDeleteShader(vertex_id);
+    glDeleteShader(fragment_id);
 
     Utils::glCheckError();
 }
 
 Shader::~Shader()
 {
-    //PRINT_FUNC();
-    glDetachShader(m_id, m_vertex_id);
-    Utils::glCheckError();
-
-    glDetachShader(m_id, m_fragment_id);
-    Utils::glCheckError();
-
-//    glDeleteShader(m_vertex_id);
-//    Utils::glCheckError();
-
-//    glDeleteShader(m_fragment_id);
-//    Utils::glCheckError();
-
-    glDeleteProgram(m_id);
-    Utils::glCheckError();
+    cleanUp();
 }
 
-void Shader::use()
+void Shader::cleanUp()
 {
-    glUseProgram(m_id);
+    if (m_id != 0)
+        glDeleteProgram(m_id);
 }
 
-unsigned int Shader::id()
+void Shader::use() const
+{
+    if (m_id != 0)
+        glUseProgram(m_id);
+}
+
+unsigned int Shader::id() const
 {
     return m_id;
 }
 
 void Shader::checkShaderStatus(unsigned int id)
 {
-    //PRINT_FUNC();
     int success;
     char info[512];
 
@@ -92,7 +82,6 @@ void Shader::checkShaderStatus(unsigned int id)
 
 void Shader::checkShaderProgramStatus(unsigned int id)
 {
-    //PRINT_FUNC();
     int success;
     char info[512];
 
@@ -104,3 +93,29 @@ void Shader::checkShaderProgramStatus(unsigned int id)
         std::cout << "ERROR::SHADERPROGRAM::LINK_FAILED\n" << info << std::endl;
     }
 }
+
+void Shader::setMat4(const std::string& name, const float* m)
+{
+    glUniformMatrix4fv(glGetUniformLocation(m_id, name.c_str()), 1, GL_FALSE, m);
+}
+
+void Shader::setVec3(const std::string& name, const float* v)
+{
+    glUniform3fv(glGetUniformLocation(m_id, name.c_str()), 1, v);
+}
+
+void Shader::setVec4(const std::string& name, const float* v)
+{
+    glUniform4fv(glGetUniformLocation(m_id, name.c_str()), 1, v);
+}
+
+void Shader::setVec3(const std::string& name, float x, float y, float z)
+{
+    glUniform3f(glGetUniformLocation(m_id, name.c_str()), x, y, z);
+}
+
+void Shader::setVec4(const std::string& name, float x, float y, float z, float w)
+{
+    glUniform4f(glGetUniformLocation(m_id, name.c_str()), x, y, z, w);
+}
+
