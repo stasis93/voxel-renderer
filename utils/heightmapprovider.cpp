@@ -25,8 +25,8 @@ uint8_t chooseBlock(float c);
 void fillChunkColumn(std::vector<Chunk> &column)
 {
     auto colPos = column[0].getPosition();
-    int ix = colPos.x,
-        iz = colPos.z;
+    int ix = colPos.x * Blocks::CX / 16.0f,
+        iz = colPos.z * Blocks::CZ / 16.0f;
     int y_max = column.size() * Blocks::CY;
 
     nmBuilder.SetBounds(ix * winSz, (ix + 1) * winSz, iz * winSz, (iz + 1) * winSz);
@@ -37,8 +37,7 @@ void fillChunkColumn(std::vector<Chunk> &column)
         const float *row = nm.GetConstSlabPtr(z);
         for (int x = 0; x < Blocks::CX; x++)
         {
-
-            int val = (row[x] + 1.0f) * y_max / 2.0f;
+            int val = (row[x] + 1.0f) * y_max / 2.0f; // map from [-1, 1] to [0, y_max]
             val = val < 1 ? 1 : val > y_max ? y_max : val;
 
             for (int y = 0; y < val; y++)
@@ -47,8 +46,9 @@ void fillChunkColumn(std::vector<Chunk> &column)
                 Chunk &chunk = column[chunk_y];
                 chunk.set({x, y % Blocks::CY, z}, 4);
             }
-//            Chunk &chunk = column[(val - 1) / Blocks::CY];
-//            chunk.set({x, (val - 1) % Blocks::CY, z}, chooseBlock((float)val / (float)y_max));
+            // set top-block's type
+            Chunk &chunk = column[(val - 1) / Blocks::CY];
+            chunk.set({x, (val - 1) % Blocks::CY, z}, chooseBlock((float)val / (float)y_max));
         }
     }
 }

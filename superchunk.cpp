@@ -57,7 +57,7 @@ void ChunkManager::update(const Position3 &playerPosition)
                 renderPositions.emplace_back(x, 0, z);
         }
     }
-    std::cout << m_renderList.size() << std::endl;
+    //std::cout << m_renderList.size() << std::endl;
     // fill render list (find in map or load if not present)
     m_chunkColsLoaded = 0;
 
@@ -223,9 +223,10 @@ void ChunkManager::set(const Position3& pos, uint8_t type)
     ch->set({x, y, z}, type);
 }
 
-void ChunkManager::render(const glm::mat4 &/*proj_view*/)
+void ChunkManager::render(const glm::mat4& proj_view)
 {
     m_shader.use();
+    m_shader.setMat4("proj_view", glm::value_ptr(proj_view));
 
     int chunksUpdated = 0;
 
@@ -236,9 +237,6 @@ void ChunkManager::render(const glm::mat4 &/*proj_view*/)
             continue;
 
         auto p = chunk.getPosition();
-        glm::mat4 model = glm::translate(glm::mat4(1), glm::vec3(p.x * Blocks::CX, p.y * Blocks::CY, p.z * Blocks::CZ));
-        glUniformMatrix4fv(glGetUniformLocation(m_shader.id(), "model"), 1, GL_FALSE, glm::value_ptr(model));
-
         if (m_frustrum)
         {
             constexpr static float chunkRad = std::sqrt(Blocks::CX * Blocks::CX + Blocks::CY * Blocks::CY + Blocks::CZ * Blocks::CZ) / 2.0f;
@@ -246,6 +244,10 @@ void ChunkManager::render(const glm::mat4 &/*proj_view*/)
             if (Frustrum::Outside == m_frustrum->checkSphere(chunkCenter, chunkRad))
                 continue;
         }
+
+        glm::mat4 model = glm::translate(glm::mat4(1), glm::vec3(p.x * Blocks::CX, p.y * Blocks::CY, p.z * Blocks::CZ));
+        m_shader.setMat4("model", glm::value_ptr(model));
+
         if (chunk.changed() && chunksUpdated < MAX_UPDATES_PER_FRAME)
         {
             chunk.updateVBO();

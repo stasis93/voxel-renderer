@@ -42,17 +42,16 @@ Application::Application()
     //glGenerateMipmap(GL_TEXTURE_2D);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    m_shader_chunk->use();
-    glUniform1i(glGetUniformLocation(m_shader_chunk->id(), "blockTexture"), 0);
-
+    m_shader_chunk.use();
+    m_shader_chunk.setUniform(Shader::UniformType::Int, "blockTexture", 0);
     Utils::glCheckError();
 }
 
 void Application::initGL()
 {
     gladLoadGL();
-    //glEnable(GL_DEPTH_TEST);
-    //glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
 }
 
 void Application::run()
