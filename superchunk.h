@@ -23,11 +23,13 @@ struct hash<Position3>
     size_t operator()(const Position3 &pos) const
     {
         // http://stackoverflow.com/a/1646913/126995
-        size_t res = 17;
-        res = res * 31 + std::hash<int>()(pos.x);
-        res = res * 31 + std::hash<int>()(pos.y);
-        res = res * 31 + std::hash<int>()(pos.z);
-        return res;
+//        size_t res = 17;
+//        res = res * 31 + std::hash<int>()(pos.x);
+//        res = res * 31 + std::hash<int>()(pos.y);
+//        res = res * 31 + std::hash<int>()(pos.z);
+        int16_t x = static_cast<int16_t>(pos.x);
+        int16_t z = static_cast<int16_t>(pos.z);
+        return x ^ (z << 16);
     }
 };
 }
