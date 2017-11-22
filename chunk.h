@@ -43,7 +43,7 @@ private:
     bool            m_changed {false};
     bool            m_empty {true};
     uint8_t         m_blocks[Blocks::CX][Blocks::CY][Blocks::CZ];
-    unsigned int    m_vbo;
+    unsigned int    m_vao, m_vbo;
     int             m_elements {0};
     ChunkManager    &m_parent;
     Position3       m_pos;

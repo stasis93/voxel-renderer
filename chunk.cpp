@@ -6,7 +6,7 @@
 #include <cassert>
 #include "utils.h"
 
-char Chunk::transp_bit = 0x40;
+char Chunk::transp_bit = 0b01000000;
 using byte4 = glm::tvec4<GLbyte>;
 
 using namespace Blocks;
@@ -33,12 +33,18 @@ Chunk::Chunk(ChunkManager &manager, Position3 index)
     : m_parent(manager), m_pos(index)
 {
     memset(m_blocks, 0, sizeof(m_blocks));
+    glGenVertexArrays(1, &m_vao);
+    glBindVertexArray(m_vao);
     glGenBuffers(1, &m_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    glVertexAttribPointer(0, 4, GL_BYTE, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(0);
 }
 
 Chunk::~Chunk()
 {
     glDeleteBuffers(1, &m_vbo);
+    glDeleteVertexArrays(1, &m_vao);
 }
 
 bool Chunk::empty()
@@ -188,13 +194,14 @@ void Chunk::updateVBO()
     }
     m_elements = i;
     if (m_elements > 0)
+    {
         m_empty = false;
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    glBufferData(GL_ARRAY_BUFFER, m_elements * sizeof *vertices, vertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    Utils::glCheckError();
-
+        glBindVertexArray(m_vao);
+        glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+        glBufferData(GL_ARRAY_BUFFER, m_elements * sizeof *vertices, vertices, GL_STATIC_DRAW);
+        Utils::glCheckError();
+    }
     m_changed = false;
 }
 
@@ -203,12 +210,9 @@ void Chunk::render()
     if(!m_elements)
         return;
 
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    glVertexAttribPointer(0, 4, GL_BYTE, GL_FALSE, 0, 0);
+    glBindVertexArray(m_vao);
     glDrawArrays(GL_TRIANGLES, 0, m_elements);
+    glBindVertexArray(0);
 }
 
 const Position3& Chunk::getPosition() const
