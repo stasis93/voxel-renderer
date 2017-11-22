@@ -14,11 +14,11 @@
 
 int ChunkManager::MAX_CHUNK_COLUMNS_LOADED;
 int ChunkManager::MAX_CHUNK_COLS_PER_FRAME = 4;
-int ChunkManager::MAX_UPDATES_PER_FRAME = 15;
-int ChunkManager::MAX_EXTRA_UPDATES_PER_FRAME = 4;
+int ChunkManager::MAX_UPDATES_PER_FRAME = 20;
+int ChunkManager::MAX_EXTRA_UPDATES_PER_FRAME = 2;
 
 ChunkManager::ChunkManager(Shader& shader)
-    : m_loadRadius(25)
+    : m_loadRadius(20)
     , m_shader(shader)
 {
     m_renderList.reserve(m_loadRadius * m_loadRadius);
