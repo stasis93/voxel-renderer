@@ -7,26 +7,26 @@ Camera::Camera(const glm::vec3 & position, float yaw, float pitch)
     , m_worldUp({0.0f, 1.0f, 0.0f})
     , m_yaw(yaw)
     , m_pitch(pitch)
-    , m_canFly(true)
 {
+    validateYawPitch();
     update();
 }
 
-void Camera::move(CameraMovement dir, float dt_sec)
+void Camera::move(CameraMovement dir, float offset)
 {
-    float vel = dt_sec * 10.0f;
+    float vel = offset;
     switch (dir)
     {
-    case CameraMovement::FORWARD:
-        m_pos += vel * (m_canFly ? m_orientation : glm::normalize(glm::cross(m_worldUp, m_right)));
+    case Forward:
+        m_pos += vel * m_orientation;
         break;
-    case CameraMovement::BACK:
-        m_pos -= vel * (m_canFly ? m_orientation : glm::normalize(glm::cross(m_worldUp, m_right)));
+    case Back:
+        m_pos -= vel * m_orientation;
         break;
-    case CameraMovement::LEFT:
+    case Left:
         m_pos -= vel * m_right;
         break;
-    case CameraMovement::RIGHT:
+    case Right:
         m_pos += vel * m_right;
         break;
     default:
