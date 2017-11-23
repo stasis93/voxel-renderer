@@ -40,8 +40,6 @@ void Shader::load(char const* vertexFilename, char const* fragmentFilename)
 
     glDeleteShader(vertex_id);
     glDeleteShader(fragment_id);
-
-    Utils::glCheckError();
 }
 
 Shader::~Shader()
@@ -51,14 +49,12 @@ Shader::~Shader()
 
 void Shader::cleanUp()
 {
-    if (m_id != 0)
-        glDeleteProgram(m_id);
+    glDeleteProgram(m_id);
 }
 
 void Shader::use() const
 {
-    if (m_id != 0)
-        glUseProgram(m_id);
+    glUseProgram(m_id);
 }
 
 unsigned int Shader::id() const
@@ -92,6 +88,16 @@ void Shader::checkShaderProgramStatus(unsigned int id)
         glGetProgramInfoLog(id, 512, NULL, info);
         std::cout << "ERROR::SHADERPROGRAM::LINK_FAILED\n" << info << std::endl;
     }
+}
+
+void Shader::setInt(const std::string& name, const int value)
+{
+    glUniform1i(glGetUniformLocation(m_id, name.c_str()), value);
+}
+
+void Shader::setFloat(const std::string& name, const float value)
+{
+    glUniform1f(glGetUniformLocation(m_id, name.c_str()), value);
 }
 
 void Shader::setMat4(const std::string& name, const float* m)

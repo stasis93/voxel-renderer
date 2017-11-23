@@ -34,16 +34,27 @@ void Camera::move(CameraMovement dir, float offset)
     }
 }
 
-void Camera::rotate(float offset_x, float offset_y)
+void Camera::rotate(float offsYaw, float offsPitch)
 {
-    m_yaw += offset_x * 0.1f;
-    m_yaw = std::fmod(m_yaw, 360.0f);
-    m_pitch -= offset_y * 0.1f;
+    m_yaw += offsYaw;
+    m_pitch += offsPitch;
+    validateYawPitch();
+    update();
+}
 
+void Camera::setRotation(float yaw, float pitch)
+{
+    m_yaw = yaw;
+    m_pitch = pitch;
+    validateYawPitch();
+    update();
+}
+
+void Camera::validateYawPitch()
+{
+    m_yaw = std::fmod(m_yaw, 360.0f);
     if (m_pitch > 89.9f) m_pitch = 89.9f;
     if (m_pitch < -89.9f) m_pitch = -89.9f;
-
-    update();
 }
 
 glm::mat4 Camera::getViewMatrix() const

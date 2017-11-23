@@ -15,11 +15,8 @@ public:
     void use() const;
     unsigned int id() const;
 
-    enum class UniformType {Float, Int};
-
-    template<typename T>
-    void setUniform(UniformType t, const std::string& name, T val);
-
+    void setInt  (const std::string& name, const int value);
+    void setFloat(const std::string& name, const float value);
     void setMat4(const std::string& name, const float* m);
     void setVec3(const std::string& name, const float* v);
     void setVec3(const std::string& name, float x, float y, float z);
@@ -34,21 +31,5 @@ private:
 private:
     unsigned int m_id {0};
 };
-
-template<typename T>
-void Shader::setUniform(UniformType t, const std::string& name, T val)
-{
-    switch (t)
-    {
-    case UniformType::Float:
-        glUniform1f(glGetUniformLocation(m_id, name.c_str()), (float)val);
-        break;
-    case UniformType::Int:
-        glUniform1i(glGetUniformLocation(m_id, name.c_str()), (int)val);
-        break;
-    default:
-        break;
-    }
-}
 
 #endif // SHADER_H_INCLUDED

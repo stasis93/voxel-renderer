@@ -5,20 +5,16 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-enum class CameraMovement
-{
-    FORWARD,
-    BACK,
-    LEFT,
-    RIGHT
-};
 
 class Camera
 {
 public:
+    enum CameraMovement {Forward, Back, Left, Right};
+
     Camera(const glm::vec3 & position = {0.0f, 0.0f, 0.0f}, float yaw = -90.0f, float pitch = 0.0f);
     void move(CameraMovement dir, float offset);
-    void rotate(float offset_x, float offset_y);
+    void rotate(float offsYaw, float offsPitch);
+    void setRotation(float yaw, float pitch);
     glm::mat4 getViewMatrix() const;
 
     const glm::vec3& getPosition()  const {return m_pos;}
@@ -26,8 +22,11 @@ public:
     const glm::vec3& getUp()        const {return m_up;}
     const glm::vec3& getRight()     const {return m_right;}
 
+    void setPosition(float x, float y, float z) {m_pos = {x, y, z};}
+
 private:
     void update();
+    void validateYawPitch();
 
 private:
     glm::vec3   m_pos,
@@ -38,8 +37,6 @@ private:
 
     float       m_yaw,
                 m_pitch;
-
-    bool        m_canFly;
 };
 
 #endif // CAMERA_H_INCLUDED
