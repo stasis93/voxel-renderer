@@ -223,8 +223,9 @@ void ChunkManager::set(const Position3& pos, uint8_t type)
 
 void ChunkManager::render(const glm::mat4& proj_view)
 {
-    m_shader.use();
-    m_shader.setMat4("proj_view", glm::value_ptr(proj_view));
+    m_shader->use();
+    m_shader->setMat4("proj_view", &proj_view[0][0]);
+    m_blockTexture->bind();
 
     int chunksUpdated = 0;
 
@@ -235,18 +236,17 @@ void ChunkManager::render(const glm::mat4& proj_view)
             continue;
 
         auto p = chunk.getPosition();
-        if (m_frustrum)
-        {
-            constexpr static float chunkRad = std::sqrt(Blocks::CX * Blocks::CX + Blocks::CY * Blocks::CY + Blocks::CZ * Blocks::CZ) / 2.0f;
-            glm::vec3 chunkCenter{(p.x + 0.5f) * Blocks::CX, (p.y + 0.5f) * Blocks::CY, (p.z + 0.5f) * Blocks::CZ};
-            if (Frustrum::Outside == m_frustrum->checkSphere(chunkCenter, chunkRad))
-                continue;
-        }
+
+        constexpr static float chunkRad = std::sqrt(Blocks::CX * Blocks::CX + Blocks::CY * Blocks::CY + Blocks::CZ * Blocks::CZ) / 2.0f;
+        glm::vec3 chunkCenter{(p.x + 0.5f) * Blocks::CX, (p.y + 0.5f) * Blocks::CY, (p.z + 0.5f) * Blocks::CZ};
+        if (Frustrum::Outside == m_frustrum.checkSphere(chunkCenter, chunkRad))
+            continue;
+
 
         glm::mat4 model = glm::translate(glm::mat4(1), glm::vec3(p.x * Blocks::CX, p.y * Blocks::CY, p.z * Blocks::CZ));
-        m_shader.setMat4("model", glm::value_ptr(model));
+        m_shader->setMat4("model", &model[0][0]);
 
-        if (chunk.changed() && chunksUpdated < MAX_UPDATES_PER_FRAME)
+        if (chunk.changed() && chunksUpdated < m_config.rendering().maxUpdatesPerFrame)
         {
             chunk.updateVBO();
             chunksUpdated++;
@@ -255,7 +255,14 @@ void ChunkManager::render(const glm::mat4& proj_view)
     }
 }
 
-void ChunkManager::setFrustrum(const Frustrum& frustrum)
+void ChunkManager::setBlockTexture(std::unique_ptr<Texture> pTexture)
 {
-    m_frustrum = &frustrum;
+    m_blockTexture = std::move(pTexture);
+}
+
+void ChunkManager::setShader(std::unique_ptr<Shader> pShader)
+{
+    m_shader = std::move(pShader);
+    m_shader->use();
+    m_shader->setInt("blockTexture", 0);
 }

@@ -1,52 +1,35 @@
 #include "application.h"
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "stb_image.h"
-#include "constants.h"
 #include <iostream>
+#include <memory>
+#include "stb_image.h"
+
+#include "constants.h"
 #include "utils.h"
 #include "random.h"
 #include "heightmapprovider.h"
 #include "Settings.h"
-
+#include "TextureLoader.h"
 
 Application::Application()
     : m_camera(glm::vec3{0.0f, 100.0f, 0.0f},
                180.0f, -20.0f)
+    , m_chunkManager(m_frustrum)
+    , m_config(Settings::get())
 {
     initGL();
     registerCallbacks();
     Random::init();
-    HeightMapProvider::init(std::time(nullptr));
+    HeightMapProvider::init(m_config.world().seed == 0 ? std::time(nullptr) : m_config.world().seed);
 
-    m_shader_chunk.load(ShaderFiles::vertex_shader_chunk,
-                        ShaderFiles::fragment_shader_chunk);
-    /* some chunk manager initialization */
-    m_chunkManager = std::make_unique<ChunkManager>(m_shader_chunk);
-    m_chunkManager->setFrustrum(m_frustrum);
+    std::unique_ptr<Shader> chunkShader = std::make_unique<Shader>();
+    chunkShader->load(ShaderFiles::vertex_shader_chunk, ShaderFiles::fragment_shader_chunk);
+    m_chunkManager.setShader(std::move(chunkShader));
+    m_chunkManager.setBlockTexture(TextureLoader::loadTexture(m_config.world().blockTextureName));
 
-    int w, h, ch;
-    stbi_set_flip_vertically_on_load(1);
-    auto data = stbi_load("textures/blocks.png", &w, &h, &ch, 4);
-
-    if (!data)
-        onError("stbi_load failed");
-
-    GLuint blk_tex_id;
-    glGenTextures(1, &blk_tex_id);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, blk_tex_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-    stbi_image_free(data);
-    //glGenerateMipmap(GL_TEXTURE_2D);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    m_shader_chunk.use();
-    m_shader_chunk.setInt("blockTexture", 0);
     Utils::glCheckError();
-
-    // Testing
-    auto& s = Settings::get();
 }
 
 void Application::initGL()
@@ -86,7 +69,7 @@ void Application::initGL()
 
 void Application::registerCallbacks()
 {
-    glfwSetKeyCallback(m_window, [](GLFWwindow* w, int key, int scancode, int action, int mods)
+    glfwSetKeyCallback(m_window, [](GLFWwindow* w, int key, int /*scancode*/, int action, int /*mods*/)
     {
         Application* This = (Application*)glfwGetWindowUserPointer(w);
         This->keyCallback(key, action);
@@ -99,6 +82,11 @@ void Application::registerCallbacks()
     {
         Application* This = (Application*)glfwGetWindowUserPointer(w);
         This->cursorPosCallback(xpos, ypos);
+    });
+    glfwSetFramebufferSizeCallback(m_window, [](GLFWwindow* w, int width, int height)
+    {
+        Application* This = (Application*)glfwGetWindowUserPointer(w);
+        This->resizeCallback(width, height);
     });
 }
 
@@ -128,6 +116,11 @@ void Application::cursorPosCallback(double x, double y)
     m_xprev = x;
     m_yprev = y;
     m_camera.rotate(dx / 10, -dy / 10);
+}
+
+void Application::resizeCallback(int width, int height)
+{
+    updateProjectionMatrix(width, height);
 }
 
 void Application::run()
@@ -160,7 +153,8 @@ void Application::update(float dt_sec)
 {
     handleKbd(dt_sec);
     const glm::vec3 &camPos = m_camera.getPosition();
-    m_chunkManager->update({(int)camPos.x, (int)camPos.y, (int)camPos.z});
+    m_chunkManager.update({(int)camPos.x, (int)camPos.y, (int)camPos.z});
+    updateFrustrum();
 }
 
 void Application::handleKbd(float dt)
@@ -184,21 +178,25 @@ void Application::render()
     glClearColor(0.1f, 0.2f, 0.4f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    int w, h;
-    glfwGetFramebufferSize(m_window, &w, &h);
-    m_proj = glm::perspective(glm::radians(40.0f), w / (float)h, 0.1f, 500.0f);
     m_view = m_camera.getViewMatrix();
-
-
-    m_frustrum.updatePlanes(m_camera.getPosition(), m_camera.getDirection(),
-                            m_camera.getUp(), m_camera.getRight(),
-                            glm::radians(40.0f), w / (float)h, 0.1f, 500.0f);
-
-    auto proj_x_view = m_proj * m_view;
-    m_chunkManager->render(proj_x_view);
+    m_chunkManager.render(m_proj * m_view);
 
     glfwSwapBuffers(m_window);
     Utils::glCheckError();
+}
+
+void Application::updateFrustrum()
+{
+    int w, h;
+    glfwGetFramebufferSize(m_window, &w, &h);
+    m_frustrum.updatePlanes(m_camera.getPosition(), m_camera.getDirection(),
+                            m_camera.getUp(), m_camera.getRight(),
+                            glm::radians((float)m_config.rendering().fovy), w / (float)h, 0.1f, 1000.0f);
+}
+
+void Application::updateProjectionMatrix(int width, int height)
+{
+    m_proj = glm::perspective(glm::radians((float)m_config.rendering().fovy), width / (float)height, 0.1f, 1000.0f);
 }
 
 Application::~Application()

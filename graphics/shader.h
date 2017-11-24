@@ -4,8 +4,9 @@
 #include "glad/glad.h"
 #include <string>
 
+#include "NonCopyable.h"
 
-class Shader
+class Shader : NonCopyable
 {
 public:
     Shader() = default;

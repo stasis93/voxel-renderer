@@ -1,12 +1,15 @@
 #ifndef SUPERCHUNK_H_INCLUDED
 #define SUPERCHUNK_H_INCLUDED
 
-#include "chunk.h"
 #include <unordered_map>
 #include <vector>
+#include <memory>
 #include <queue>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <glm/mat4x4.hpp>
+
+#include "chunk.h"
+#include "shader.h"
+#include "Texture.h"
 
 constexpr int CY_MAX = 6;
 
@@ -14,6 +17,7 @@ using ChunkColumn = std::vector<Chunk>;
 using ChunkColumnMap = std::unordered_map<Position3, ChunkColumn>;
 
 class Frustrum;
+class Settings;
 
 namespace std
 {
@@ -39,17 +43,18 @@ class Shader;
 
 struct ChunkManager
 {
-    ChunkManager(Shader& shader);
+    ChunkManager(Frustrum& frustrum);
 
     uint8_t         get(const Position3& pos);
     void            set(const Position3& pos, uint8_t type);
 
     void            update(const Position3 &playerPosition);
     void            render(const glm::mat4 &proj_view);
-    void            setFrustrum(const Frustrum& frustrum);
+
+    void            setShader(std::unique_ptr<Shader> pShader);
+    void            setBlockTexture(std::unique_ptr<Texture> pTexture);
 
     Chunk*          getChunk(const Position3& index);
-
 
 private:
     ChunkColumn*    getColumn(const Position3 &index);
@@ -66,10 +71,12 @@ private:
                                 m_chunkColsLoaded {0};
     Position3                   m_oldPlayerPos;
 
-    Shader                      &m_shader;
+    std::unique_ptr<Shader>     m_shader {nullptr};
+    std::unique_ptr<Texture>    m_blockTexture {nullptr};
 
     bool                        m_loadingDone {false};
-    const Frustrum*             m_frustrum {nullptr};
+    Frustrum&                   m_frustrum;
+    Settings&                   m_config;
 };
 
 #endif // SUPERCHUNK_H_INCLUDED

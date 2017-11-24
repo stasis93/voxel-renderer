@@ -1,4 +1,5 @@
 #include <iostream>
+#include <glm/detail/func_geometric.hpp>
 
 #include "frustrum.h"
 

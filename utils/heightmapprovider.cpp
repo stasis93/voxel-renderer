@@ -20,7 +20,7 @@ void init(int seed)
     nmBuilder.SetDestSize(Blocks::CX, Blocks::CZ);
 }
 
-uint8_t chooseBlock(float c);
+static uint8_t chooseBlock(float c);
 
 void fillChunkColumn(std::vector<Chunk> &column)
 {
@@ -53,7 +53,7 @@ void fillChunkColumn(std::vector<Chunk> &column)
     }
 }
 
-uint8_t chooseBlock(float c)
+static uint8_t chooseBlock(float c)
 {
     float grass1 = 0.3f,
           grass2 = 0.5f,

@@ -1,15 +1,15 @@
 #ifndef APPLICATION_H_INCLUDED
 #define APPLICATION_H_INCLUDED
 
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <memory>
+#include <glm/mat4x4.hpp>
+
 #include "shader.h"
 #include "camera.h"
 #include "superchunk.h"
 #include "timer.h"
 #include "frustrum.h"
 
+class Settings;
 class GLFWwindow;
 
 class Application
@@ -34,18 +34,20 @@ private:
 
     void keyCallback(int key, int action);
     void cursorPosCallback(double x, double y);
+    void resizeCallback(int width, int height);
+    void updateFrustrum();
+    void updateProjectionMatrix(int width, int height);
 
 private:
-    void    handleKbd(float dt_sec);
+    void handleKbd(float dt_sec);
 
 private:
     GLFWwindow*             m_window {nullptr};
 
-    Shader                  m_shader_chunk;
-    std::unique_ptr<ChunkManager> m_chunkManager;
-    Frustrum                m_frustrum;
-
     Camera                  m_camera;
+    Frustrum                m_frustrum;
+    ChunkManager            m_chunkManager;
+
     double                  m_xprev {0},
                             m_yprev {0};
 
