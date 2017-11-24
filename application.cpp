@@ -1,9 +1,11 @@
 #include "application.h"
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include <iostream>
 #include <memory>
+#include <chrono>
+#include <mingw.thread.h> // threads are still missing in MinGW GCC :(
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 #include "stb_image.h"
 
 #include "constants.h"
@@ -12,6 +14,7 @@
 #include "heightmapprovider.h"
 #include "Settings.h"
 #include "TextureLoader.h"
+
 
 Application::Application()
     : m_camera(glm::vec3{0.0f, 100.0f, 0.0f},
@@ -69,7 +72,7 @@ void Application::initGL()
     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
         onError("gladLoadGLLoader failed");
 
-    glfwSwapInterval(1);
+    glfwSwapInterval(m_config.rendering().vsync ? 1 : 0);
 
     glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwGetCursorPos(m_window, &m_xprev, &m_yprev);
@@ -138,12 +141,21 @@ void Application::resizeCallback(int width, int height)
 
 void Application::run()
 {
-    m_timer.restart();
+    m_timerMain.restart();
+    m_timerFpsCap.restart();
 
     while (!glfwWindowShouldClose(m_window))
     {
-        m_timeSlice += m_timer.getElapsedSecs();
-        m_timer.restart();
+        m_timeSlice += m_timerMain.getElapsedSecs();
+        m_timerMain.restart();
+
+        double dt = m_timerFpsCap.getElapsedSecs();
+        double wait = 1.0 / m_config.rendering().fpsLimit - dt;
+
+        if (m_config.rendering().vsync == false && wait > 0)
+            std::this_thread::sleep_for(std::chrono::duration
+                                        <double, std::ratio<1>>(wait));
+        m_timerFpsCap.restart(); // must not count sleep time
 
         pollEvents();
 
@@ -209,7 +221,8 @@ void Application::updateFrustrum()
 
 void Application::updateProjectionMatrix(int width, int height)
 {
-    m_proj = glm::perspective(glm::radians((float)m_config.rendering().fovy), width / (float)height, 0.1f, 1000.0f);
+    if (width > 0 && height > 0)
+        m_proj = glm::perspective(glm::radians((float)m_config.rendering().fovy), width / (float)height, 0.1f, 1000.0f);
 }
 
 Application::~Application()

@@ -74,7 +74,7 @@ void ChunkManager::update(const Position3 &playerPosition)
 
             // create CY_MAX chunks in new column
             for (auto y = 0; y < m_config.world().chunksInCol; y++)
-                newColumn.emplace_back(*this, Position3 {pos.x, y, pos.z});
+                newColumn.emplace_back(this, Position3 {pos.x, y, pos.z});
 
             // Queue an Update of 4 adjacent chunks in XZ plane if they exist already for all chunks in created column
             if (getChunk(Position3 {pos.x - 1, 0, pos.z}))

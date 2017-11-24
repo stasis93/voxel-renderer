@@ -2,7 +2,7 @@
 
 namespace Consts
 {
-    const float FIXED_TIMESTEP = 1.0f / 60;
+    const double FIXED_TIMESTEP = 1.0 / 60;
 }
 
 namespace ShaderFiles

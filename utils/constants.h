@@ -3,7 +3,7 @@
 
 namespace Consts
 {
-    extern const float FIXED_TIMESTEP;
+    extern const double FIXED_TIMESTEP;
 }
 
 namespace ShaderFiles

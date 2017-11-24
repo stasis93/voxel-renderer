@@ -9,7 +9,7 @@ using TimePoint = std::chrono::time_point<Clock>;
 class Timer
 {
 public:
-    float getElapsedSecs();
+    double getElapsedSecs();
     int getElapsedMillis();
     void restart();
 

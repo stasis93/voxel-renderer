@@ -25,7 +25,7 @@ class ChunkManager;
 
 struct Chunk
 {
-                    Chunk(ChunkManager &manager, Position3 index);
+                    Chunk(ChunkManager* manager, Position3 index);
                     ~Chunk();
 
     uint8_t         get(const Position3 &pos) const;
@@ -45,7 +45,7 @@ private:
     uint8_t         m_blocks[Blocks::CX][Blocks::CY][Blocks::CZ];
     unsigned int    m_vao, m_vbo;
     int             m_elements {0};
-    ChunkManager    &m_parent;
+    ChunkManager*   m_parent;
     Position3       m_pos;
 };
 

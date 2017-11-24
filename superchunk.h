@@ -37,9 +37,6 @@ struct hash<Position3>
 };
 }
 
-
-class Shader;
-
 struct ChunkManager
 {
     ChunkManager(Frustrum& frustrum);

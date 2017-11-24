@@ -56,8 +56,8 @@ private:
     glm::mat4               m_proj,
                             m_view;
 
-    Timer                   m_timer;
-    float                   m_timeSlice {0};
+    Timer                   m_timerMain, m_timerFpsCap;
+    double                  m_timeSlice {0};
 
     Settings&               m_config;
 };

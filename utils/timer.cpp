@@ -1,8 +1,8 @@
 #include "timer.h"
 
-float Timer::getElapsedSecs()
+double Timer::getElapsedSecs()
 {
-    auto dur = std::chrono::duration_cast<std::chrono::duration<float>>
+    auto dur = std::chrono::duration_cast<std::chrono::duration<double>>
                                         (Clock::now() - m_start);
     return dur.count();
 }

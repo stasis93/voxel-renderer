@@ -29,7 +29,7 @@ bool Position3::operator==(const Position3 &other) const
     return x == other.x && y == other.y && z == other.z;
 }
 
-Chunk::Chunk(ChunkManager &manager, Position3 index)
+Chunk::Chunk(ChunkManager* manager, Position3 index)
     : m_parent(manager), m_pos(index)
 {
     memset(m_blocks, 0, sizeof(m_blocks));
@@ -90,7 +90,7 @@ void Chunk::updateVBO()
                 continue;
 
             // View from negative x
-            neighbour = m_parent.getChunk({m_pos.x - 1, m_pos.y, m_pos.z});
+            neighbour = m_parent->getChunk({m_pos.x - 1, m_pos.y, m_pos.z});
 
             if ((x > 0 && !m_blocks[x - 1][y][z]) ||                        // if previous block is empty
                 (x > 0 && m_blocks[x - 1][y][z] & transp_bit) ||
@@ -107,7 +107,7 @@ void Chunk::updateVBO()
             }
 
             // View from positive x
-            neighbour = m_parent.getChunk({m_pos.x + 1, m_pos.y, m_pos.z});
+            neighbour = m_parent->getChunk({m_pos.x + 1, m_pos.y, m_pos.z});
 
             if ((x < CX - 1 && !m_blocks[x + 1][y][z]) ||
                 (x < CX - 1 && m_blocks[x + 1][y][z] & transp_bit) ||
@@ -124,7 +124,7 @@ void Chunk::updateVBO()
             }
 
             // View from negative y
-            neighbour = m_parent.getChunk({m_pos.x, m_pos.y - 1, m_pos.z});
+            neighbour = m_parent->getChunk({m_pos.x, m_pos.y - 1, m_pos.z});
 
             if ((y > 0 && !m_blocks[x][y - 1][z]) ||
                 (y > 0 && m_blocks[x][y - 1][z] & transp_bit) ||
@@ -141,7 +141,7 @@ void Chunk::updateVBO()
             }
 
             // View from positive y
-            neighbour = m_parent.getChunk({m_pos.x, m_pos.y + 1, m_pos.z});
+            neighbour = m_parent->getChunk({m_pos.x, m_pos.y + 1, m_pos.z});
 
             if ((y < CY - 1 && !m_blocks[x][y + 1][z]) ||
                 (y < CY - 1 && m_blocks[x][y + 1][z] & transp_bit) ||
@@ -158,7 +158,7 @@ void Chunk::updateVBO()
             }
 
             // View from negative z
-            neighbour = m_parent.getChunk({m_pos.x, m_pos.y, m_pos.z - 1});
+            neighbour = m_parent->getChunk({m_pos.x, m_pos.y, m_pos.z - 1});
 
             if ((z > 0 && !m_blocks[x][y][z - 1]) ||
                 (z > 0 && m_blocks[x][y][z - 1] & transp_bit) ||
@@ -175,7 +175,7 @@ void Chunk::updateVBO()
             }
 
             // View from positive z
-            neighbour = m_parent.getChunk({m_pos.x, m_pos.y, m_pos.z + 1});
+            neighbour = m_parent->getChunk({m_pos.x, m_pos.y, m_pos.z + 1});
 
             if ((z < CZ - 1 && !m_blocks[x][y][z + 1]) ||
                 (z < CZ - 1 && m_blocks[x][y][z + 1] & transp_bit) ||

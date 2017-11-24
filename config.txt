@@ -17,8 +17,8 @@ negz = textures/ame_greenhaze/greenhaze_ft.tga
 blockTextures = textures/blocks.png
 seed = 24
 max_loads_per_frame = 4
-max_updates_per_frame = 25
-max_extra_updates_per_frame = 2
+max_updates_per_frame = 10
+max_extra_updates_per_frame = 1
 max_chunk_cols_loaded = 5000
 chunks_in_column = 6
 
@@ -28,5 +28,5 @@ window_width = 1024
 window_height = 768
 fovy = 45
 load_radius = 25
-fps_limit = 60
-vsync = 1
+fps_limit = 90 # ignored if vsync = 1
+vsync = 0
