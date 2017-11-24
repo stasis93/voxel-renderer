@@ -5,6 +5,7 @@
 #include <iostream>
 #include <climits>
 #include <functional>
+#include <algorithm>
 
 static char const* configFileName = "config.txt";
 
@@ -63,6 +64,8 @@ void Settings::parse()
     {
         if (line.empty() || line.at(0) == '#')
             continue;
+
+        line.erase(std::remove(line.begin(), line.end(), ' '), line.end());
 
         using std::placeholders::_1;
         using std::placeholders::_2;
