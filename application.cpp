@@ -57,7 +57,13 @@ void Application::initGL()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    m_window = glfwCreateWindow(1280, 720, "Simple example", nullptr, nullptr);
+
+    m_window = glfwCreateWindow(m_config.rendering().width,
+                                m_config.rendering().height,
+                                "Voxel world", nullptr, nullptr);
+    int w, h;
+    glfwGetWindowSize(m_window, &w, &h);
+    updateProjectionMatrix(w, h);
 
     if (!m_window)
         onError("glfwCreateWindow failed");

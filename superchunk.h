@@ -57,12 +57,6 @@ private:
     void            unloadSpareChunkColumns();
     void            updateAdjacent();
 
-
-    static int      MAX_CHUNK_COLUMNS_LOADED;
-    static int      MAX_CHUNK_COLS_PER_FRAME;
-    static int      MAX_UPDATES_PER_FRAME;
-    static int      MAX_EXTRA_UPDATES_PER_FRAME;
-
 private:
     ChunkColumnMap              m_chunkColumns;
     std::vector<ChunkColumn*>   m_renderList;

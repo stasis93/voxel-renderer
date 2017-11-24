@@ -11,12 +11,18 @@ negz=ame_greenhaze/greenhaze_ft.tga
 
 
 [World]
-seed=777
+blockTextures=textures/blocks.png
+seed=0
 
 
 [Rendering]
+window_width=1024
+window_height=768
+fovy=45
+max_loads_per_frame=5
 max_updates_per_frame=25
 max_extra_updates_per_frame=2
-load_radius=20
+max_chunk_cols_loaded=5000
+load_radius=25
 fps_limit=60
-vsync=1;
+vsync=1

@@ -54,6 +54,8 @@ private:
 
     Timer                   m_timer;
     float                   m_timeSlice {0};
+
+    Settings&               m_config;
 };
 
 #endif // APPLICATION_H_INCLUDED

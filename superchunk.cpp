@@ -1,28 +1,26 @@
 #include "superchunk.h"
+
 #include <memory>
 #include <iostream>
 #include <cstring>
-#include <thread>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <glad/glad.h>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "shader.h"
 #include "heightmapprovider.h"
 #include "utils.h"
 #include "frustrum.h"
+#include "Settings.h"
 
-int ChunkManager::MAX_CHUNK_COLUMNS_LOADED;
-int ChunkManager::MAX_CHUNK_COLS_PER_FRAME = 4;
-int ChunkManager::MAX_UPDATES_PER_FRAME = 10;
-int ChunkManager::MAX_EXTRA_UPDATES_PER_FRAME = 1;
-
-ChunkManager::ChunkManager(Shader& shader)
-    : m_loadRadius(20)
-    , m_shader(shader)
+ChunkManager::ChunkManager(Frustrum& frustrum)
+    : m_frustrum(frustrum)
+    , m_config(Settings::get())
 {
-    m_renderList.reserve(m_loadRadius * m_loadRadius);
-    MAX_CHUNK_COLUMNS_LOADED = 10 * m_loadRadius * m_loadRadius;
+    m_loadRadius = m_config.rendering().loadRadius;
+    int minChunkColsLoaded = m_loadRadius * m_loadRadius * 4;
+    if (m_config.rendering().maxChunkColsLoaded < minChunkColsLoaded)
+        m_config.rendering().maxChunkColsLoaded = minChunkColsLoaded;
+    m_renderList.reserve(minChunkColsLoaded);
 }
 
 void ChunkManager::update(const Position3 &playerPosition)
@@ -68,7 +66,7 @@ void ChunkManager::update(const Position3 &playerPosition)
             m_renderList.emplace_back(&it->second);
         else
         {
-            if (m_chunkColsLoaded == MAX_CHUNK_COLS_PER_FRAME)
+            if (m_chunkColsLoaded == m_config.rendering().maxLoadsPerFrame)
                 continue;
 
             ChunkColumn newColumn;
@@ -114,7 +112,7 @@ void ChunkManager::update(const Position3 &playerPosition)
 void ChunkManager::updateAdjacent()
 {
     int updated = 0;
-    while (updated < MAX_EXTRA_UPDATES_PER_FRAME && !m_adjacentUpdateQueue.empty())
+    while (updated < m_config.rendering().maxExtraUpdatesPerFrame && !m_adjacentUpdateQueue.empty())
     {
         Position3 &pos = m_adjacentUpdateQueue.front();
         ChunkColumn *col = getColumn(pos);
@@ -145,7 +143,7 @@ bool ChunkManager::tryUnloadAtPosition(const Position3& pos)
 
 void ChunkManager::unloadSpareChunkColumns()
 {
-    while (m_chunkColumns.size() > (unsigned int)MAX_CHUNK_COLUMNS_LOADED)
+    while (m_chunkColumns.size() > (unsigned)m_config.rendering().maxChunkColsLoaded)
     {
         ChunkColumn *colToUnload = m_loadedQueue.front();
         const Position3& posToUnload = (*colToUnload)[0].getPosition();

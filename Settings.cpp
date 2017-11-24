@@ -6,7 +6,7 @@
 #include <climits>
 #include <functional>
 
-static char const* configFileName = "../../config.txt";
+static char const* configFileName = "config.txt";
 
 Settings::Settings()
 {
@@ -21,10 +21,16 @@ Settings& Settings::get()
 
 void Settings::setDefaults()
 {
-    m_world.seed = 777;
+    m_world.seed = 0;
+    m_world.blockTextureName = "textures/block.png";
 
+    m_rendering.width = 1280;
+    m_rendering.height = 720;
+    m_rendering.fovy = 40;
+    m_rendering.maxLoadsPerFrame = 5;
     m_rendering.maxUpdatesPerFrame = 10;
     m_rendering.maxExtraUpdatesPerFrame = 1;
+    m_rendering.maxChunkColsLoaded = 5000;
     m_rendering.loadRadius = 20;
     m_rendering.fpsLimit = 60;
     m_rendering.vsync = true;
@@ -70,7 +76,6 @@ void Settings::parse()
             parseLineFunc = std::bind(&Settings::parseWorldParam, this, _1, _2);
             continue;
         }
-
         else if (line == "[Rendering]")
         {
             parseLineFunc = std::bind(&Settings::parseRenderingParam, this, _1, _2);
@@ -82,7 +87,8 @@ void Settings::parse()
         {
             std::string name = line.substr(0, nameEnd);
             std::string value = line.substr(nameEnd + 1);
-            if (!parseLineFunc(name, value))
+
+            if (parseLineFunc && !parseLineFunc(name, value))
                 std::cerr << "Unknown parameter: " << name << std::endl;
         }
     }
@@ -92,14 +98,24 @@ void Settings::parse()
 bool Settings::parseRenderingParam(const std::string& name, const std::string& value)
 {
     bool ok = true;
-    if (name == "max_updates_per_frame")
+    if (name == "window_width")
+        m_rendering.width = parseInt(value, 640, 1920, m_rendering.width);
+    else if (name == "window_height")
+        m_rendering.height = parseInt(value, 480, 1080, m_rendering.height);
+    else if (name == "fovy")
+        m_rendering.fovy = parseInt(value, 20, 90, m_rendering.fovy);
+    else if (name == "max_loads_per_frame")
+        m_rendering.maxLoadsPerFrame = parseInt(value, 1, 100, m_rendering.maxLoadsPerFrame);
+    else if (name == "max_updates_per_frame")
         m_rendering.maxUpdatesPerFrame = parseInt(value, 1, 100, m_rendering.maxUpdatesPerFrame);
     else if (name == "max_extra_updates_per_frame")
-        m_rendering.maxExtraUpdatesPerFrame = parseInt(value, 1, 10, m_rendering.maxExtraUpdatesPerFrame);
+        m_rendering.maxExtraUpdatesPerFrame = parseInt(value, 1, 100, m_rendering.maxExtraUpdatesPerFrame);
+    else if (name == "max_chunk_cols_loaded")
+        m_rendering.maxChunkColsLoaded = parseInt(value, 100, 20000, m_rendering.maxChunkColsLoaded);
     else if (name == "load_radius")
         m_rendering.loadRadius = parseInt(value, 10, 100, m_rendering.loadRadius);
     else if (name == "fps_limit")
-        m_rendering.fpsLimit = parseInt(value, 30, 300, m_rendering.fpsLimit);
+        m_rendering.fpsLimit = parseInt(value, 30, 1000, m_rendering.fpsLimit);
     else if (name == "vsync")
         m_rendering.vsync = parseInt(value, 0, 1, m_rendering.vsync);
     else
@@ -112,6 +128,8 @@ bool Settings::parseWorldParam(const std::string& name, const std::string& value
     bool ok = true;
     if (name == "seed")
         m_world.seed = parseInt(value, INT_MIN, INT_MAX, 0);
+    else if (name == "blockTextures")
+        m_world.blockTextureName = value;
     else
         ok = false;
     return ok;
