@@ -1,0 +1,22 @@
+# Comment
+
+[Skybox]
+# Specify relative image paths
+posx=ame_greenhaze/greenhaze_rt.tga
+negx=ame_greenhaze/greenhaze_lf.tga
+posy=ame_greenhaze/greenhaze_up.tga
+negy=ame_greenhaze/greenhaze_dn.tga
+posz=ame_greenhaze/greenhaze_bk.tga
+negz=ame_greenhaze/greenhaze_ft.tga
+
+
+[World]
+seed=777
+
+
+[Rendering]
+max_updates_per_frame=25
+max_extra_updates_per_frame=2
+load_radius=20
+fps_limit=60
+vsync=1;

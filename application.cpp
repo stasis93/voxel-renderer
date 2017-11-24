@@ -7,6 +7,7 @@
 #include "utils.h"
 #include "random.h"
 #include "heightmapprovider.h"
+#include "Settings.h"
 
 
 Application::Application()
@@ -43,6 +44,9 @@ Application::Application()
     m_shader_chunk.use();
     m_shader_chunk.setInt("blockTexture", 0);
     Utils::glCheckError();
+
+    // Testing
+    auto& s = Settings::get();
 }
 
 void Application::initGL()

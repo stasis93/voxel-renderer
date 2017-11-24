@@ -12,4 +12,4 @@ utils/noiseutils.cpp
 include/glad/*
 include/KHR/*
 src/glad.c
-config.txt
+ConfigParserDev/*
