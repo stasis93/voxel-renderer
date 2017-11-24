@@ -121,6 +121,7 @@ void Application::cursorPosCallback(double x, double y)
 void Application::resizeCallback(int width, int height)
 {
     updateProjectionMatrix(width, height);
+    glViewport(0, 0, width, height);
 }
 
 void Application::run()
@@ -143,9 +144,6 @@ void Application::run()
 
 void Application::pollEvents()
 {
-    int w, h;
-    glfwGetFramebufferSize(m_window, &w, &h);
-    glViewport(0, 0, w, h);
     glfwPollEvents();
 }
 

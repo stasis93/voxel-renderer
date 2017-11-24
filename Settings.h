@@ -20,16 +20,17 @@ public:
     {
         int seed;
         std::string blockTextureName;
+        int maxLoadsPerFrame;
+        int maxUpdatesPerFrame;
+        int maxExtraUpdatesPerFrame;
+        int maxChunkColsLoaded;
+        int chunksInCol;
     };
     struct Rendering
     {
         int width;
         int height;
         int fovy;
-        int maxLoadsPerFrame;
-        int maxUpdatesPerFrame;
-        int maxExtraUpdatesPerFrame;
-        int maxChunkColsLoaded;
         int loadRadius;
         int fpsLimit;
         bool vsync;

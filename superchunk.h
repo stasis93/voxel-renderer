@@ -11,7 +11,6 @@
 #include "shader.h"
 #include "Texture.h"
 
-constexpr int CY_MAX = 6;
 
 using ChunkColumn = std::vector<Chunk>;
 using ChunkColumnMap = std::unordered_map<Position3, ChunkColumn>;

@@ -18,8 +18,8 @@ ChunkManager::ChunkManager(Frustrum& frustrum)
 {
     m_loadRadius = m_config.rendering().loadRadius;
     int minChunkColsLoaded = m_loadRadius * m_loadRadius * 4;
-    if (m_config.rendering().maxChunkColsLoaded < minChunkColsLoaded)
-        m_config.rendering().maxChunkColsLoaded = minChunkColsLoaded;
+    if (m_config.world().maxChunkColsLoaded < minChunkColsLoaded)
+        m_config.world().maxChunkColsLoaded = minChunkColsLoaded;
     m_renderList.reserve(minChunkColsLoaded);
 }
 
@@ -66,14 +66,14 @@ void ChunkManager::update(const Position3 &playerPosition)
             m_renderList.emplace_back(&it->second);
         else
         {
-            if (m_chunkColsLoaded == m_config.rendering().maxLoadsPerFrame)
+            if (m_chunkColsLoaded == m_config.world().maxLoadsPerFrame)
                 continue;
 
             ChunkColumn newColumn;
-            newColumn.reserve(CY_MAX);
+            newColumn.reserve(m_config.world().chunksInCol);
 
             // create CY_MAX chunks in new column
-            for (auto y = 0; y < CY_MAX; y++)
+            for (auto y = 0; y < m_config.world().chunksInCol; y++)
                 newColumn.emplace_back(*this, Position3 {pos.x, y, pos.z});
 
             // Queue an Update of 4 adjacent chunks in XZ plane if they exist already for all chunks in created column
@@ -112,7 +112,7 @@ void ChunkManager::update(const Position3 &playerPosition)
 void ChunkManager::updateAdjacent()
 {
     int updated = 0;
-    while (updated < m_config.rendering().maxExtraUpdatesPerFrame && !m_adjacentUpdateQueue.empty())
+    while (updated < m_config.world().maxExtraUpdatesPerFrame && !m_adjacentUpdateQueue.empty())
     {
         Position3 &pos = m_adjacentUpdateQueue.front();
         ChunkColumn *col = getColumn(pos);
@@ -143,7 +143,7 @@ bool ChunkManager::tryUnloadAtPosition(const Position3& pos)
 
 void ChunkManager::unloadSpareChunkColumns()
 {
-    while (m_chunkColumns.size() > (unsigned)m_config.rendering().maxChunkColsLoaded)
+    while (m_chunkColumns.size() > (unsigned)m_config.world().maxChunkColsLoaded)
     {
         ChunkColumn *colToUnload = m_loadedQueue.front();
         const Position3& posToUnload = (*colToUnload)[0].getPosition();
@@ -162,7 +162,7 @@ void ChunkManager::unloadSpareChunkColumns()
 
 Chunk* ChunkManager::getChunk(const Position3& index)
 {
-    if(!(index.y >= 0 && index.y < CY_MAX))
+    if(!(index.y >= 0 && index.y < m_config.world().chunksInCol))
         return nullptr;
 
     ChunkColumn *column = getColumn({index.x, 0, index.z});
@@ -191,7 +191,7 @@ uint8_t ChunkManager::get(const Position3& pos)
         y = pos.y % Blocks::CY,
         z = pos.z % Blocks::CZ;
 
-    assert(cy >= 0 && cy < CY_MAX);
+    assert(cy >= 0 && cy < m_config.world().chunksInCol);
 
     Chunk *ch = getChunk({cx, cy, cz});
 
@@ -211,7 +211,7 @@ void ChunkManager::set(const Position3& pos, uint8_t type)
         y = pos.y % Blocks::CY,
         z = pos.z % Blocks::CZ;
 
-    assert(cy >= 0 && cy < CY_MAX);
+    assert(cy >= 0 && cy < m_config.world().chunksInCol);
 
     Chunk *ch = getChunk({cx, cy, cz});
 
@@ -246,7 +246,7 @@ void ChunkManager::render(const glm::mat4& proj_view)
         glm::mat4 model = glm::translate(glm::mat4(1), glm::vec3(p.x * Blocks::CX, p.y * Blocks::CY, p.z * Blocks::CZ));
         m_shader->setMat4("model", &model[0][0]);
 
-        if (chunk.changed() && chunksUpdated < m_config.rendering().maxUpdatesPerFrame)
+        if (chunk.changed() && chunksUpdated < m_config.world().maxUpdatesPerFrame)
         {
             chunk.updateVBO();
             chunksUpdated++;
