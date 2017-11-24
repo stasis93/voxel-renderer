@@ -24,10 +24,22 @@ Application::Application()
     Random::init();
     HeightMapProvider::init(m_config.world().seed == 0 ? std::time(nullptr) : m_config.world().seed);
 
-    std::unique_ptr<Shader> chunkShader = std::make_unique<Shader>();
-    chunkShader->load(ShaderFiles::vertex_shader_chunk, ShaderFiles::fragment_shader_chunk);
-    m_chunkManager.setShader(std::move(chunkShader));
+    std::unique_ptr<Shader> shader = std::make_unique<Shader>();
+    shader->load(ShaderFiles::vertex_shader_chunk, ShaderFiles::fragment_shader_chunk);
+    shader->use();
+    shader->setInt("blockTexture", 0);
+
+    m_chunkManager.setShader(std::move(shader));
     m_chunkManager.setBlockTexture(TextureLoader::loadTexture(m_config.world().blockTextureName));
+
+    shader = std::make_unique<Shader>();
+    shader->load(ShaderFiles::vertex_shader_skybox, ShaderFiles::fragment_shader_skybox);
+    shader->use();
+    shader->setInt("skybox", 0);
+
+    m_skyBox.initialize();
+    m_skyBox.setShader(std::move(shader));
+    m_skyBox.setTexture(TextureLoader::loadCubeMap(m_config.skyboxNames(), false));
 
     Utils::glCheckError();
 }
@@ -177,7 +189,10 @@ void Application::render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_view = m_camera.getViewMatrix();
-    m_chunkManager.render(m_proj * m_view);
+    auto transf = m_proj * m_view;
+
+    m_chunkManager.render(transf);
+    m_skyBox.render(glm::mat4(glm::mat3(transf)));
 
     glfwSwapBuffers(m_window);
     Utils::glCheckError();

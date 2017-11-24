@@ -8,6 +8,8 @@
 #include "superchunk.h"
 #include "timer.h"
 #include "frustrum.h"
+#include "Skybox.h"
+
 
 class Settings;
 class GLFWwindow;
@@ -15,11 +17,10 @@ class GLFWwindow;
 class Application
 {
 public:
-            Application();
-           ~Application();
+        Application();
+       ~Application();
 
-
-    void    run();
+    void run();
 
 private:
     void initGL();
@@ -35,10 +36,10 @@ private:
     void keyCallback(int key, int action);
     void cursorPosCallback(double x, double y);
     void resizeCallback(int width, int height);
+
     void updateFrustrum();
     void updateProjectionMatrix(int width, int height);
 
-private:
     void handleKbd(float dt_sec);
 
 private:
@@ -47,6 +48,7 @@ private:
     Camera                  m_camera;
     Frustrum                m_frustrum;
     ChunkManager            m_chunkManager;
+    Skybox                  m_skyBox;
 
     double                  m_xprev {0},
                             m_yprev {0};

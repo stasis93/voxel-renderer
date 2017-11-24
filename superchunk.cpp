@@ -263,6 +263,4 @@ void ChunkManager::setBlockTexture(std::unique_ptr<Texture> pTexture)
 void ChunkManager::setShader(std::unique_ptr<Shader> pShader)
 {
     m_shader = std::move(pShader);
-    m_shader->use();
-    m_shader->setInt("blockTexture", 0);
 }
