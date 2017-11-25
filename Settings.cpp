@@ -111,7 +111,7 @@ bool Settings::parseRenderingParam(const std::string& name, const std::string& v
     else if (name == "load_radius")
         m_rendering.loadRadius = parseInt(value, 10, 100, m_rendering.loadRadius);
     else if (name == "fps_limit")
-        m_rendering.fpsLimit = parseInt(value, 25, 1000, m_rendering.fpsLimit);
+        m_rendering.fpsLimit = parseInt(value, 0, 1000, m_rendering.fpsLimit);
     else if (name == "vsync")
         m_rendering.vsync = parseInt(value, 0, 1, m_rendering.vsync);
     else

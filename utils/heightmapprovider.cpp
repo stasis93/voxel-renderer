@@ -14,7 +14,7 @@ double winSz = 0.075;
 void init(int seed)
 {
     perlin.SetSeed(seed);
-    perlin.SetOctaveCount(3);
+    perlin.SetOctaveCount(4);
     nmBuilder.SetSourceModule(perlin);
     nmBuilder.SetDestNoiseMap(nm);
     nmBuilder.SetDestSize(Blocks::CX, Blocks::CZ);

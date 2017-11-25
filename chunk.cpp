@@ -11,24 +11,6 @@ using byte4 = glm::tvec4<GLbyte>;
 
 using namespace Blocks;
 
-bool operator<(const Position3 &p1, const Position3 &p2)
-{
-    if (p1.z < p2.z)
-        return true;
-    if (p1.z > p2.z)
-        return false;
-    if (p1.y < p2.y)
-        return true;
-    if (p1.y > p2.y)
-        return false;
-    return p1.x < p2.x;
-}
-
-bool Position3::operator==(const Position3 &other) const
-{
-    return x == other.x && y == other.y && z == other.z;
-}
-
 Chunk::Chunk(ChunkManager* manager, Position3 index)
     : m_parent(manager), m_pos(index)
 {

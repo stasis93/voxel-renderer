@@ -18,25 +18,6 @@ using ChunkColumnMap = std::unordered_map<Position3, ChunkColumn>;
 class Frustrum;
 class Settings;
 
-namespace std
-{
-template<>
-struct hash<Position3>
-{
-    size_t operator()(const Position3 &pos) const
-    {
-        // http://stackoverflow.com/a/1646913/126995
-//        size_t res = 17;
-//        res = res * 31 + std::hash<int>()(pos.x);
-//        res = res * 31 + std::hash<int>()(pos.y);
-//        res = res * 31 + std::hash<int>()(pos.z);
-        int16_t x = static_cast<int16_t>(pos.x);
-        int16_t z = static_cast<int16_t>(pos.z);
-        return x ^ (z << 16);
-    }
-};
-}
-
 struct ChunkManager
 {
     ChunkManager(Frustrum& frustrum);
@@ -58,6 +39,8 @@ private:
     void            unloadSpareChunkColumns();
     void            updateAdjacent();
 
+    void            fillLookupIndexBuffer();
+
 private:
     ChunkColumnMap              m_chunkColumns;
     std::vector<ChunkColumn*>   m_renderList;
@@ -73,6 +56,8 @@ private:
     bool                        m_loadingDone {false};
     Frustrum&                   m_frustrum;
     Settings&                   m_config;
+
+    std::vector<std::pair<int, int>> m_lookupIndexBuffer;
 };
 
 #endif // SUPERCHUNK_H_INCLUDED

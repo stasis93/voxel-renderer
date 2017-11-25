@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <iostream>
+#include <algorithm>
 #include <cstring>
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -12,12 +13,14 @@
 #include "frustrum.h"
 #include "Settings.h"
 
+
 ChunkManager::ChunkManager(Frustrum& frustrum)
     : m_frustrum(frustrum)
     , m_config(Settings::get())
 {
     m_loadRadius = m_config.rendering().loadRadius;
-    int minChunkColsLoaded = m_loadRadius * m_loadRadius * 4;
+    fillLookupIndexBuffer();
+    int minChunkColsLoaded = m_lookupIndexBuffer.size();
     if (m_config.world().maxChunkColsLoaded < minChunkColsLoaded)
         m_config.world().maxChunkColsLoaded = minChunkColsLoaded;
     m_renderList.reserve(minChunkColsLoaded);
@@ -41,21 +44,9 @@ void ChunkManager::update(const Position3 &playerPosition)
 
     // get positions for chunk column _potential_ rendering
     std::vector<Position3> renderPositions;
-
-    int x0 = playerPosition.x / Blocks::CX - m_loadRadius;
-    int z0 = playerPosition.z / Blocks::CZ - m_loadRadius;
-
-    for (int x = x0; x <= x0 + 2 * m_loadRadius; x++)
-    {
-        int dx = x - playerPosition.x / Blocks::CX;
-        for (int z = z0; z <= z0 + 2 * m_loadRadius; z++)
-        {
-            int dz = z - playerPosition.z / Blocks::CZ;
-            if (dz * dz + dx * dx <= m_loadRadius * m_loadRadius)
-                renderPositions.emplace_back(x, 0, z);
-        }
-    }
-    //std::cout << m_renderList.size() << std::endl;
+    for (const auto& i : m_lookupIndexBuffer)
+        renderPositions.emplace_back(playerPosition.x / Blocks::CX + i.first, 0,
+                                     playerPosition.z / Blocks::CZ + i.second);
     // fill render list (find in map or load if not present)
     m_chunkColsLoaded = 0;
 
@@ -263,4 +254,51 @@ void ChunkManager::setBlockTexture(std::unique_ptr<Texture> pTexture)
 void ChunkManager::setShader(std::unique_ptr<Shader> pShader)
 {
     m_shader = std::move(pShader);
+}
+
+void ChunkManager::fillLookupIndexBuffer()
+{ /* square spiral lookup */
+    m_lookupIndexBuffer.clear();
+    int radius = m_config.rendering().loadRadius;
+    bool go = true;
+    int x = 0, y = 0;
+    int dir = 0, lineLen = 1, passesWithCurrentLen = 0;
+
+    while (go)
+    {
+        int dx = 0, dy = 0;
+        switch (dir)
+        {
+        case 0:
+            dy = 1;
+            break;
+        case 1:
+            dx = 1;
+            break;
+        case 2:
+            dy = -1;
+            break;
+        case 3:
+            dx = -1;
+            break;
+        default:
+            break;
+        }
+        for (int l = 0; l < lineLen; l++)
+        {
+            m_lookupIndexBuffer.emplace_back(std::make_pair(x, y));
+            x += dx; y += dy;
+        }
+        dir++;
+        dir %= 4;
+        passesWithCurrentLen++;
+        if (passesWithCurrentLen == 2)
+        {
+            if (lineLen < 2 * radius)
+                passesWithCurrentLen = 0;
+            lineLen++;
+        }
+        if (passesWithCurrentLen == 3)
+            go = false;
+    }
 }

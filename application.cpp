@@ -152,7 +152,8 @@ void Application::run()
         double dt = m_timerFpsCap.getElapsedSecs();
         double wait = 1.0 / m_config.rendering().fpsLimit - dt;
 
-        if (m_config.rendering().vsync == false && wait > 0)
+        if (m_config.rendering().vsync == false &&
+            m_config.rendering().fpsLimit > 0 && wait > 0)
             std::this_thread::sleep_for(std::chrono::duration
                                         <double, std::ratio<1>>(wait));
         m_timerFpsCap.restart(); // must not count sleep time
@@ -176,7 +177,6 @@ void Application::update(float dt_sec)
     handleKbd(dt_sec);
     const glm::vec3 &camPos = m_camera.getPosition();
     m_chunkManager.update({(int)camPos.x, (int)camPos.y, (int)camPos.z});
-    updateFrustrum();
 }
 
 void Application::handleKbd(float dt)
@@ -197,14 +197,14 @@ void Application::handleKbd(float dt)
 
 void Application::render()
 {
+    updateFrustrum();
     glClearColor(0.1f, 0.2f, 0.4f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_view = m_camera.getViewMatrix();
-    auto transf = m_proj * m_view;
 
-    m_chunkManager.render(transf);
-    m_skyBox.render(glm::mat4(glm::mat3(transf)));
+    m_chunkManager.render(m_proj * m_view);
+    m_skyBox.render(m_proj * glm::mat4(glm::mat3(m_view)));
 
     glfwSwapBuffers(m_window);
     Utils::glCheckError();

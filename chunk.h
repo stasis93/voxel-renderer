@@ -2,24 +2,13 @@
 #define CHUNK_H_INCLUDED
 
 #include <cstdint>
-#include <algorithm>
 #include "constants.h"
+#include "Position3.h"
 
 namespace Blocks
 {
 constexpr int CX = 16, CY = 16, CZ = 16;
 }
-
-
-struct Position3
-{
-    Position3() = default;
-    Position3(int x, int y, int z) : x(x), y(y), z(z) {}
-    int x {0}, y {0}, z {0};
-    friend bool operator<(const Position3 &p1, const Position3 &p2);
-    bool operator==(const Position3 &other) const;
-};
-
 
 class ChunkManager;
 
