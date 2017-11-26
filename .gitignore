@@ -7,11 +7,13 @@ voxel.layout
 debug.log
 utils/stb_image.h
 utils/stb_image.cpp
-utils/noiseutils.h
-utils/noiseutils.cpp
 include/glad/*
 include/KHR/*
 src/glad.c
 ConfigParserDev/*
 config.txt
+
 Indices/*
+
+terrain/noiseutils.h
+terrain/noiseutils.cpp

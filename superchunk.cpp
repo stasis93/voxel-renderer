@@ -189,7 +189,7 @@ uint8_t ChunkManager::get(const Position3& pos)
     if (!ch)
         return (uint8_t)0;
 
-    return ch->get({x, y, z});
+    return ch->getRaw({x, y, z});
 }
 
 void ChunkManager::set(const Position3& pos, uint8_t type)
@@ -209,7 +209,7 @@ void ChunkManager::set(const Position3& pos, uint8_t type)
     if (!ch)
         return;
 
-    ch->set({x, y, z}, type);
+    ch->setRaw({x, y, z}, type);
 }
 
 void ChunkManager::render(const glm::mat4& proj_view)

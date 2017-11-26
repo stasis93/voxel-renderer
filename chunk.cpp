@@ -39,13 +39,28 @@ bool Chunk::changed()
     return m_changed;
 }
 
-uint8_t Chunk::get(const Position3 &pos) const
+Blocks::Type Chunk::get(const Position3 &pos) const
+{
+    assert(pos.x < CX && pos.y < CY && pos.z < CZ);
+    return static_cast<Blocks::Type>(m_blocks[pos.x][pos.y][pos.z] & ~transp_bit);
+}
+
+uint8_t Chunk::getRaw(const Position3 &pos) const
 {
     assert(pos.x < CX && pos.y < CY && pos.z < CZ);
     return m_blocks[pos.x][pos.y][pos.z];
 }
 
-void Chunk::set(const Position3 &pos, uint8_t type)
+void Chunk::set(const Position3 &pos, Blocks::Type type)
+{
+    assert(pos.x < CX && pos.y < CY && pos.z < CZ);
+    m_blocks[pos.x][pos.y][pos.z] = static_cast<uint8_t>(type);
+    m_changed = true;
+    if (type != Blocks::Type::None)
+        m_empty = false;
+}
+
+void Chunk::setRaw(const Position3& pos, uint8_t type)
 {
     assert(pos.x < CX && pos.y < CY && pos.z < CZ);
     m_blocks[pos.x][pos.y][pos.z] = type;
@@ -68,16 +83,18 @@ void Chunk::updateVBO()
             uint8_t type = m_blocks[x][y][z];
 
             // Empty block?
-            if(type == 0)
+            if (type == static_cast<uint8_t>(Blocks::Type::None))
                 continue;
+            if (type == static_cast<uint8_t>(Blocks::Type::Glass))
+                m_blocks[x][y][z] |= transp_bit;
 
             // View from negative x
             neighbour = m_parent->getChunk({m_pos.x - 1, m_pos.y, m_pos.z});
 
             if ((x > 0 && !m_blocks[x - 1][y][z]) ||                        // if previous block is empty
                 (x > 0 && m_blocks[x - 1][y][z] & transp_bit) ||
-                (x == 0 && neighbour && !neighbour->get({CX - 1, y, z})) ||   // if we're on the edge and adjacent block from neighbor chunk is empty
-                (x == 0 && neighbour && neighbour->get({CX - 1, y, z}) & transp_bit) ||
+                (x == 0 && neighbour && !neighbour->getRaw({CX - 1, y, z})) ||   // if we're on the edge and adjacent block from neighbor chunk is empty
+                (x == 0 && neighbour && neighbour->getRaw({CX - 1, y, z}) & transp_bit) ||
                 (x == 0 && !neighbour))                                     // if we're on the edge and neighbor _chunk_ is empty
             {
                 vertices[i++] = byte4(x,     y,     z,     type & ~transp_bit);
@@ -93,8 +110,8 @@ void Chunk::updateVBO()
 
             if ((x < CX - 1 && !m_blocks[x + 1][y][z]) ||
                 (x < CX - 1 && m_blocks[x + 1][y][z] & transp_bit) ||
-                (x == CX - 1 && neighbour && !neighbour->get({0, y, z})) ||
-                (x == CX - 1 && neighbour && neighbour->get({0, y, z}) & transp_bit) ||
+                (x == CX - 1 && neighbour && !neighbour->getRaw({0, y, z})) ||
+                (x == CX - 1 && neighbour && neighbour->getRaw({0, y, z}) & transp_bit) ||
                 (x == CX - 1 && !neighbour))
             {
                 vertices[i++] = byte4(x + 1, y,     z,     type & ~transp_bit);
@@ -110,8 +127,8 @@ void Chunk::updateVBO()
 
             if ((y > 0 && !m_blocks[x][y - 1][z]) ||
                 (y > 0 && m_blocks[x][y - 1][z] & transp_bit) ||
-                (y == 0 && neighbour && !neighbour->get({x, CY - 1, z})) ||
-                (y == 0 && neighbour && neighbour->get({x, CY - 1, z}) & transp_bit) ||
+                (y == 0 && neighbour && !neighbour->getRaw({x, CY - 1, z})) ||
+                (y == 0 && neighbour && neighbour->getRaw({x, CY - 1, z}) & transp_bit) ||
                 (y == 0 && !neighbour))
             {
                 vertices[i++] = byte4(x,     y,     z,     -(type & ~transp_bit));  // negative values are used in fragment shader
@@ -127,8 +144,8 @@ void Chunk::updateVBO()
 
             if ((y < CY - 1 && !m_blocks[x][y + 1][z]) ||
                 (y < CY - 1 && m_blocks[x][y + 1][z] & transp_bit) ||
-                (y == CY - 1 && neighbour && !neighbour->get({x, 0, z})) ||
-                (y == CY - 1 && neighbour && neighbour->get({x, 0, z}) & transp_bit) ||
+                (y == CY - 1 && neighbour && !neighbour->getRaw({x, 0, z})) ||
+                (y == CY - 1 && neighbour && neighbour->getRaw({x, 0, z}) & transp_bit) ||
                 (y == CY - 1 && !neighbour))
             {
                 vertices[i++] = byte4(x,     y + 1, z,     -(type & ~transp_bit));
@@ -144,8 +161,8 @@ void Chunk::updateVBO()
 
             if ((z > 0 && !m_blocks[x][y][z - 1]) ||
                 (z > 0 && m_blocks[x][y][z - 1] & transp_bit) ||
-                (z == 0 && neighbour && !neighbour->get({x, y, CZ - 1})) ||
-                (z == 0 && neighbour && neighbour->get({x, y, CZ - 1}) & transp_bit) ||
+                (z == 0 && neighbour && !neighbour->getRaw({x, y, CZ - 1})) ||
+                (z == 0 && neighbour && neighbour->getRaw({x, y, CZ - 1}) & transp_bit) ||
                 (z == 0 && !neighbour))
             {
                 vertices[i++] = byte4(x,     y,     z,     type & ~transp_bit);
@@ -161,8 +178,8 @@ void Chunk::updateVBO()
 
             if ((z < CZ - 1 && !m_blocks[x][y][z + 1]) ||
                 (z < CZ - 1 && m_blocks[x][y][z + 1] & transp_bit) ||
-                (z == CZ - 1 && neighbour && !neighbour->get({x, y, 0})) ||
-                (z == CZ - 1 && neighbour && neighbour->get({x, y, 0}) & transp_bit) ||
+                (z == CZ - 1 && neighbour && !neighbour->getRaw({x, y, 0})) ||
+                (z == CZ - 1 && neighbour && neighbour->getRaw({x, y, 0}) & transp_bit) ||
                 (z == CZ - 1 && !neighbour))
             {
                 vertices[i++] = byte4(x,     y,     z + 1, type & ~transp_bit);

@@ -7,8 +7,8 @@ class Chunk;
 
 namespace HeightMapProvider
 {
-void init(int seed = 777);
-void fillChunkColumn(std::vector<Chunk> &column);
+void init(int seed = 0);
+void fillChunkColumn(std::vector<Chunk>& column);
 }
 
 #endif // HEIGHTMAPPROVIDER_H_INCLUDED
