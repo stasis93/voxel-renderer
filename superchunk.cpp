@@ -233,7 +233,6 @@ void ChunkManager::render(const glm::mat4& proj_view)
         if (Frustrum::Outside == m_frustrum.checkSphere(chunkCenter, chunkRad))
             continue;
 
-
         glm::mat4 model = glm::translate(glm::mat4(1), glm::vec3(p.x * Blocks::CX, p.y * Blocks::CY, p.z * Blocks::CZ));
         m_shader->setMat4("model", &model[0][0]);
 

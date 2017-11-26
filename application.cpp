@@ -149,14 +149,17 @@ void Application::run()
         m_timeSlice += m_timerMain.getElapsedSecs();
         m_timerMain.restart();
 
-        double dt = m_timerFpsCap.getElapsedSecs();
-        double wait = 1.0 / m_config.rendering().fpsLimit - dt;
+        if(m_config.rendering().fpsLimit > 0 &&
+           m_config.rendering().vsync == false)
+        {
+            double dt = m_timerFpsCap.getElapsedSecs();
+            double wait = 1.0 / m_config.rendering().fpsLimit - dt;
 
-        if (m_config.rendering().vsync == false &&
-            m_config.rendering().fpsLimit > 0 && wait > 0)
-            std::this_thread::sleep_for(std::chrono::duration
-                                        <double, std::ratio<1>>(wait));
-        m_timerFpsCap.restart(); // must not count sleep time
+            if (wait > 0)
+                std::this_thread::sleep_for(std::chrono::duration<double>(wait));
+
+            m_timerFpsCap.restart(); // must not count sleep time
+        }
 
         pollEvents();
 

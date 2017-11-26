@@ -54,7 +54,7 @@ void fillChunkColumn(std::vector<Chunk> &column)
 
 static Blocks::Type chooseBlock(float c)
 {
-    float sand   = 0.15f,
+    float sand   = 0.05f,
           grass1 = 0.3f,
           grass2 = 0.5f,
           stone  = 0.75f,

@@ -6,7 +6,9 @@
 #include <cassert>
 #include "utils.h"
 
-char Chunk::transp_bit = 0b01000000;
+char const transp_bit = 0b10000000;
+
+
 using byte4 = glm::tvec4<GLbyte>;
 
 using namespace Blocks;

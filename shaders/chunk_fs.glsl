@@ -10,11 +10,18 @@ const float fog_density = .00003;
 void main()
 {
     vec2 texPos;
+    float texOffset;
 
-    if (texCoord.w > 0)
-        texPos = vec2((fract(texCoord.x + texCoord.z) + (texCoord.w)) / 6.0f, texCoord.y);
-    else
-        texPos = vec2((fract(texCoord.x) - (texCoord.w)) / 6.0f, texCoord.z);
+    if (texCoord.w > 0) // vertical faces
+    {
+        texOffset = texCoord.w - 1; // offset based on block type (w)
+        texPos = vec2((fract(texCoord.x + texCoord.z) + texOffset) / 16.0f, texCoord.y);
+    }
+    else if (texCoord.w < 0) // horizontal faces
+    {
+        texOffset = -texCoord.w - 1;
+        texPos = vec2((fract(texCoord.x) + texOffset) / 16.0f, texCoord.z);
+    }
 
     color = texture(blockTexture, texPos);
 
