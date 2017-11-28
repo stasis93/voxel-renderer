@@ -9,6 +9,8 @@
 #include "timer.h"
 #include "frustrum.h"
 #include "Skybox.h"
+#include "text/Font.h"
+#include "text/Text.h"
 
 
 class Settings;
@@ -49,6 +51,9 @@ private:
     Frustrum                m_frustrum;
     ChunkManager            m_chunkManager;
     Skybox                  m_skyBox;
+
+    Font                    m_font;
+    Text                    m_text;
 
     double                  m_xprev {0},
                             m_yprev {0};

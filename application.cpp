@@ -3,7 +3,12 @@
 #include <iostream>
 #include <memory>
 #include <chrono>
+#ifndef _GLIBCXX_HAS_GTHREADS
 #include <mingw.thread.h> // threads are still missing in MinGW GCC :(
+#else
+#include <thread>
+#endif
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "stb_image.h"
@@ -44,6 +49,14 @@ Application::Application()
     m_skyBox.setShader(std::move(shader));
     m_skyBox.setTexture(TextureLoader::loadCubeMap(m_config.skyboxNames(), false));
 
+    m_font.setContext(m_window);
+    m_font.loadFromFile("fonts/arial.ttf");
+    m_font.setSize(14);
+
+    m_text.setFont(&m_font);
+    m_text.setColor(1, 0, 1);
+    m_text.setPosition(1, 18);
+
     Utils::glCheckError();
 }
 
@@ -77,9 +90,10 @@ void Application::initGL()
     glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwGetCursorPos(m_window, &m_xprev, &m_yprev);
 
-    glClearColor(0, 0, 0, 1);
+    glClearColor(0.1f, 0.2f, 0.4f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+//    glCullFace(GL_FRONT);
 }
 
 void Application::registerCallbacks()
@@ -201,13 +215,13 @@ void Application::handleKbd(float dt)
 void Application::render()
 {
     updateFrustrum();
-    glClearColor(0.1f, 0.2f, 0.4f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_view = m_camera.getViewMatrix();
 
     m_chunkManager.render(m_proj * m_view);
     m_skyBox.render(m_proj * glm::mat4(glm::mat3(m_view)));
+    m_text.render();
 
     glfwSwapBuffers(m_window);
     Utils::glCheckError();

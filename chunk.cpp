@@ -83,6 +83,7 @@ void Chunk::updateVBO()
         {
             Chunk *neighbour;
             uint8_t type = m_blocks[x][y][z];
+            uint8_t type_ = type & ~transp_bit;
 
             // Empty block?
             if (type == static_cast<uint8_t>(Blocks::Type::None))
@@ -99,12 +100,12 @@ void Chunk::updateVBO()
                 (x == 0 && neighbour && neighbour->getRaw({CX - 1, y, z}) & transp_bit) ||
                 (x == 0 && !neighbour))                                     // if we're on the edge and neighbor _chunk_ is empty
             {
-                vertices[i++] = byte4(x,     y,     z,     type & ~transp_bit);
-                vertices[i++] = byte4(x,     y,     z + 1, type & ~transp_bit);
-                vertices[i++] = byte4(x,     y + 1, z,     type & ~transp_bit);
-                vertices[i++] = byte4(x,     y + 1, z,     type & ~transp_bit);
-                vertices[i++] = byte4(x,     y,     z + 1, type & ~transp_bit);
-                vertices[i++] = byte4(x,     y + 1, z + 1, type & ~transp_bit);
+                vertices[i++] = byte4(x,     y,     z,     type_);
+                vertices[i++] = byte4(x,     y,     z + 1, type_);
+                vertices[i++] = byte4(x,     y + 1, z,     type_);
+                vertices[i++] = byte4(x,     y + 1, z,     type_);
+                vertices[i++] = byte4(x,     y,     z + 1, type_);
+                vertices[i++] = byte4(x,     y + 1, z + 1, type_);
             }
 
             // View from positive x
@@ -116,12 +117,12 @@ void Chunk::updateVBO()
                 (x == CX - 1 && neighbour && neighbour->getRaw({0, y, z}) & transp_bit) ||
                 (x == CX - 1 && !neighbour))
             {
-                vertices[i++] = byte4(x + 1, y,     z,     type & ~transp_bit);
-                vertices[i++] = byte4(x + 1, y + 1, z,     type & ~transp_bit);
-                vertices[i++] = byte4(x + 1, y,     z + 1, type & ~transp_bit);
-                vertices[i++] = byte4(x + 1, y + 1, z,     type & ~transp_bit);
-                vertices[i++] = byte4(x + 1, y + 1, z + 1, type & ~transp_bit);
-                vertices[i++] = byte4(x + 1, y,     z + 1, type & ~transp_bit);
+                vertices[i++] = byte4(x + 1, y,     z,     type_);
+                vertices[i++] = byte4(x + 1, y + 1, z,     type_);
+                vertices[i++] = byte4(x + 1, y,     z + 1, type_);
+                vertices[i++] = byte4(x + 1, y + 1, z,     type_);
+                vertices[i++] = byte4(x + 1, y + 1, z + 1, type_);
+                vertices[i++] = byte4(x + 1, y,     z + 1, type_);
             }
 
             // View from negative y
@@ -133,12 +134,12 @@ void Chunk::updateVBO()
                 (y == 0 && neighbour && neighbour->getRaw({x, CY - 1, z}) & transp_bit) ||
                 (y == 0 && !neighbour))
             {
-                vertices[i++] = byte4(x,     y,     z,     -(type & ~transp_bit));  // negative values are used in fragment shader
-                vertices[i++] = byte4(x + 1, y,     z,     -(type & ~transp_bit));  // for +y and -y faces, positive for 4 others
-                vertices[i++] = byte4(x,     y,     z + 1, -(type & ~transp_bit));
-                vertices[i++] = byte4(x,     y,     z + 1, -(type & ~transp_bit));
-                vertices[i++] = byte4(x + 1, y,     z,     -(type & ~transp_bit));
-                vertices[i++] = byte4(x + 1, y,     z + 1, -(type & ~transp_bit));
+                vertices[i++] = byte4(x,     y,     z,     -type_);  // negative values are used in fragment shader
+                vertices[i++] = byte4(x + 1, y,     z,     -type_);  // for +y and -y faces, positive for 4 others
+                vertices[i++] = byte4(x,     y,     z + 1, -type_);
+                vertices[i++] = byte4(x,     y,     z + 1, -type_);
+                vertices[i++] = byte4(x + 1, y,     z,     -type_);
+                vertices[i++] = byte4(x + 1, y,     z + 1, -type_);
             }
 
             // View from positive y
@@ -150,12 +151,12 @@ void Chunk::updateVBO()
                 (y == CY - 1 && neighbour && neighbour->getRaw({x, 0, z}) & transp_bit) ||
                 (y == CY - 1 && !neighbour))
             {
-                vertices[i++] = byte4(x,     y + 1, z,     -(type & ~transp_bit));
-                vertices[i++] = byte4(x,     y + 1, z + 1, -(type & ~transp_bit));
-                vertices[i++] = byte4(x + 1, y + 1, z + 1, -(type & ~transp_bit));
-                vertices[i++] = byte4(x + 1, y + 1, z + 1, -(type & ~transp_bit));
-                vertices[i++] = byte4(x + 1, y + 1, z,     -(type & ~transp_bit));
-                vertices[i++] = byte4(x,     y + 1, z,     -(type & ~transp_bit));
+                vertices[i++] = byte4(x,     y + 1, z,     -type_);
+                vertices[i++] = byte4(x,     y + 1, z + 1, -type_);
+                vertices[i++] = byte4(x + 1, y + 1, z + 1, -type_);
+                vertices[i++] = byte4(x + 1, y + 1, z + 1, -type_);
+                vertices[i++] = byte4(x + 1, y + 1, z,     -type_);
+                vertices[i++] = byte4(x,     y + 1, z,     -type_);
             }
 
             // View from negative z
@@ -167,12 +168,12 @@ void Chunk::updateVBO()
                 (z == 0 && neighbour && neighbour->getRaw({x, y, CZ - 1}) & transp_bit) ||
                 (z == 0 && !neighbour))
             {
-                vertices[i++] = byte4(x,     y,     z,     type & ~transp_bit);
-                vertices[i++] = byte4(x,     y + 1, z,     type & ~transp_bit);
-                vertices[i++] = byte4(x + 1, y + 1, z,     type & ~transp_bit);
-                vertices[i++] = byte4(x + 1, y + 1, z,     type & ~transp_bit);
-                vertices[i++] = byte4(x + 1, y,     z,     type & ~transp_bit);
-                vertices[i++] = byte4(x,     y,     z,     type & ~transp_bit);
+                vertices[i++] = byte4(x,     y,     z,     type_);
+                vertices[i++] = byte4(x,     y + 1, z,     type_);
+                vertices[i++] = byte4(x + 1, y + 1, z,     type_);
+                vertices[i++] = byte4(x + 1, y + 1, z,     type_);
+                vertices[i++] = byte4(x + 1, y,     z,     type_);
+                vertices[i++] = byte4(x,     y,     z,     type_);
             }
 
             // View from positive z
@@ -184,12 +185,12 @@ void Chunk::updateVBO()
                 (z == CZ - 1 && neighbour && neighbour->getRaw({x, y, 0}) & transp_bit) ||
                 (z == CZ - 1 && !neighbour))
             {
-                vertices[i++] = byte4(x,     y,     z + 1, type & ~transp_bit);
-                vertices[i++] = byte4(x + 1, y,     z + 1, type & ~transp_bit);
-                vertices[i++] = byte4(x + 1, y + 1, z + 1, type & ~transp_bit);
-                vertices[i++] = byte4(x + 1, y + 1, z + 1, type & ~transp_bit);
-                vertices[i++] = byte4(x,     y + 1, z + 1, type & ~transp_bit);
-                vertices[i++] = byte4(x,     y,     z + 1, type & ~transp_bit);
+                vertices[i++] = byte4(x,     y,     z + 1, type_);
+                vertices[i++] = byte4(x + 1, y,     z + 1, type_);
+                vertices[i++] = byte4(x + 1, y + 1, z + 1, type_);
+                vertices[i++] = byte4(x + 1, y + 1, z + 1, type_);
+                vertices[i++] = byte4(x,     y + 1, z + 1, type_);
+                vertices[i++] = byte4(x,     y,     z + 1, type_);
             }
         }
     }
