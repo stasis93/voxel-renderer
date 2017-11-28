@@ -54,6 +54,7 @@ Application::Application()
     m_font.setSize(14);
 
     m_text.setFont(&m_font);
+    m_text.setText("Testing\nmultistring\ntext");
     m_text.setColor(1, 0, 1);
     m_text.setPosition(1, 18);
 
