@@ -216,6 +216,7 @@ void ChunkManager::render(const glm::mat4& proj_view)
 {
     m_shader->use();
     m_shader->setMat4("proj_view", &proj_view[0][0]);
+    m_shader->setFloat("time", m_timer.getElapsedSecs());
     m_blockTexture->bind();
 
     int chunksUpdated = 0;

@@ -57,6 +57,7 @@ private:
     bool                        m_loadingDone {false};
     Frustrum&                   m_frustrum;
     Settings&                   m_config;
+    Timer                       m_timer;
 
     std::vector<std::pair<int, int>> m_lookupIndexBuffer;
 };

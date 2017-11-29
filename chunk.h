@@ -16,7 +16,8 @@ enum class Type
     Glass,
     Stone,
     Snow,
-    Sand
+    Sand,
+    Water
 };
 }
 
