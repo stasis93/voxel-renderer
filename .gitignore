@@ -17,5 +17,4 @@ Indices/*
 
 terrain/noiseutils.h
 terrain/noiseutils.cpp
-fonts/
-*
+fonts/*
