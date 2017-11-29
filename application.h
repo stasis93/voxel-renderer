@@ -9,8 +9,8 @@
 #include "timer.h"
 #include "frustrum.h"
 #include "Skybox.h"
-#include "text/Font.h"
-#include "text/Text.h"
+#include "fpscounter.h"
+#include "debuginfo.h"
 
 
 class Settings;
@@ -52,8 +52,8 @@ private:
     ChunkManager            m_chunkManager;
     Skybox                  m_skyBox;
 
-    Font                    m_font;
-    Text                    m_text;
+    FPSCounter              m_fpsCounter;
+    DebugInfo               m_info;
 
     double                  m_xprev {0},
                             m_yprev {0};

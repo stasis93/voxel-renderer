@@ -176,7 +176,9 @@ void Application::run()
         for (; m_timeSlice > Consts::FIXED_TIMESTEP;
                m_timeSlice -= Consts::FIXED_TIMESTEP)
             update(Consts::FIXED_TIMESTEP);
+
         render();
+        m_fpsCounter.tick();
     }
 }
 
@@ -188,8 +190,12 @@ void Application::pollEvents()
 void Application::update(float dt_sec)
 {
     handleKbd(dt_sec);
-    const glm::vec3 &camPos = m_camera.getPosition();
+    const glm::vec3& camPos = m_camera.getPosition();
+    const glm::vec3& camDir = m_camera.getDirection();
     m_chunkManager.update({(int)camPos.x, (int)camPos.y, (int)camPos.z});
+
+    m_info.setPositionInfo(camPos.x, camPos.y, camPos.z);
+    m_info.setViewDirectionInfo(camDir.x, camDir.y, camDir.z);
 }
 
 void Application::handleKbd(float dt)
@@ -217,7 +223,8 @@ void Application::render()
 
     m_chunkManager.render(m_proj * m_view);
     m_skyBox.render(m_proj * glm::mat4(glm::mat3(m_view)));
-    m_text.render();
+    m_fpsCounter.render();
+    m_info.render();
 
     glfwSwapBuffers(m_window);
     Utils::glCheckError();
