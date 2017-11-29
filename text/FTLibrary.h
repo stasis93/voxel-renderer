@@ -1,19 +1,17 @@
 #ifndef FTLIBRARY_H
 #define FTLIBRARY_H
 
+#include "../utils/noncopyable.h"
 
 class FT_LibraryRec_;
 using FT_Library = FT_LibraryRec_*;
 
 
-class FTLibrary
+class FTLibrary : NonCopyable
 {
 public:
     ~FTLibrary();
     static FT_Library get();
-
-    FTLibrary  (const FTLibrary&) = delete;
-    FTLibrary& operator=(const FTLibrary&) = delete;
 
 private:
     FTLibrary();

@@ -15,7 +15,7 @@ using FT_Face = FT_FaceRec_*;
 class GLFWwindow;
 class Text;
 
-class Font
+class Font : NonCopyable
 {
 public:
     Font() = default;
