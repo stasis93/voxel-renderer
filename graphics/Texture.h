@@ -1,7 +1,7 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-#include "NonCopyable.h"
+#include "noncopyable.h"
 
 class TextureLoader;
 

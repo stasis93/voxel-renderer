@@ -5,7 +5,7 @@
 #include <array>
 #include <memory>
 
-#include "Texture.h"
+#include "texture.h"
 
 using TexturePtr = std::unique_ptr<Texture>;
 

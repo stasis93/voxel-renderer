@@ -1,4 +1,4 @@
-#include "NoiseGenerator.h"
+#include "noisegenerator.h"
 
 NoiseGenerator::NoiseGenerator(double flatTerrainFreq,
                                    double flatTerrainScale,

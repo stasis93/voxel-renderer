@@ -3,6 +3,7 @@
 #include <iostream>
 #include <memory>
 #include <chrono>
+
 #ifndef _GLIBCXX_HAS_GTHREADS
 #include <mingw.thread.h> // threads are still missing in MinGW GCC :(
 #else
@@ -17,8 +18,8 @@
 #include "utils.h"
 #include "random.h"
 #include "heightmapprovider.h"
-#include "Settings.h"
-#include "TextureLoader.h"
+#include "settings.h"
+#include "textureloader.h"
 
 
 Application::Application()
@@ -49,14 +50,8 @@ Application::Application()
     m_skyBox.setShader(std::move(shader));
     m_skyBox.setTexture(TextureLoader::loadCubeMap(m_config.skyboxNames(), false));
 
-    m_font.setContext(m_window);
-    m_font.loadFromFile("fonts/arial.ttf");
-    m_font.setSize(14);
-
-    m_text.setFont(&m_font);
-    m_text.setText("Testing\nmultistring\ntext");
-    m_text.setColor(1, 0, 1);
-    m_text.setPosition(1, 18);
+    m_fpsCounter.setContext(m_window);
+    m_info.setContext(m_window);
 
     Utils::glCheckError();
 }

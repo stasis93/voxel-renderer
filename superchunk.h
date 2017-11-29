@@ -9,7 +9,8 @@
 
 #include "chunk.h"
 #include "shader.h"
-#include "Texture.h"
+#include "texture.h"
+#include "timer.h"
 
 
 using ChunkColumn = std::vector<Chunk>;

@@ -1,9 +1,10 @@
 #include "heightmapprovider.h"
-#include "NoiseGenerator.h"
+#include "noisegenerator.h"
 #include "random.h"
 #include "../chunk.h"
 
 #include <iostream>
+
 namespace HeightMapProvider
 {
 NoiseGenerator noiseGenerator;

@@ -1,4 +1,4 @@
-#include "Skybox.h"
+#include "skybox.h"
 
 static constexpr float skyboxVertices[] =
 {

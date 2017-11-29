@@ -11,7 +11,7 @@
 #include "heightmapprovider.h"
 #include "utils.h"
 #include "frustrum.h"
-#include "Settings.h"
+#include "settings.h"
 
 
 ChunkManager::ChunkManager(Frustrum& frustrum)

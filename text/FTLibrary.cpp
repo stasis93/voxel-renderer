@@ -1,4 +1,4 @@
-#include "FTLibrary.h"
+#include "ftlibrary.h"
 
 #include <ft2build.h>
 #include <iostream>

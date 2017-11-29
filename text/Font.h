@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include "shader.h"
+#include "noncopyable.h"
 
 // Just copying from FT headers to make forward-declaring possible
 class FT_LibraryRec_;

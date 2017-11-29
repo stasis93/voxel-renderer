@@ -3,7 +3,7 @@
 
 #include <cstdint>
 #include "constants.h"
-#include "Position3.h"
+#include "position3.h"
 
 namespace Blocks
 {

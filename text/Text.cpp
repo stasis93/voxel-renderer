@@ -1,5 +1,5 @@
-#include "Text.h"
-#include "Font.h"
+#include "text.h"
+#include "font.h"
 
 
 Text::Text(Font* font, const std::string& text)

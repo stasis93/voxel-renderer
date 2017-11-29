@@ -4,9 +4,9 @@
 #include <glm/mat4x4.hpp>
 #include <memory>
 
-#include "Texture.h"
+#include "texture.h"
 #include "shader.h"
-#include "NonCopyable.h"
+#include "noncopyable.h"
 
 class Skybox : NonCopyable
 {

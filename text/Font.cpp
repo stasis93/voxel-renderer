@@ -1,4 +1,4 @@
-#include "Font.h"
+#include "font.h"
 
 #include <iostream>
 #include <cmath>
@@ -9,8 +9,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "Text.h"
-#include "FTLibrary.h"
+#include "text.h"
+#include "ftlibrary.h"
 
 Font::Font(GLFWwindow* context)
     : m_context(context)
