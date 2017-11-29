@@ -1,16 +1,15 @@
 #ifndef TIMER_H_INCLUDED
 #define TIMER_H_INCLUDED
 
-#include <chrono>
+#include <boost/chrono.hpp>
 
-using Clock = std::chrono::high_resolution_clock;
-using TimePoint = std::chrono::time_point<Clock>;
+using Clock = boost::chrono::high_resolution_clock;
+using TimePoint = boost::chrono::time_point<Clock>;
 
 class Timer
 {
 public:
-    double getElapsedSecs();
-    int getElapsedMillis();
+    double getElapsedSecs() const noexcept;
     void restart();
 
 private:

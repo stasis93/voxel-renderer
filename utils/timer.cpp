@@ -1,17 +1,11 @@
 #include "timer.h"
 
-double Timer::getElapsedSecs()
-{
-    auto dur = std::chrono::duration_cast<std::chrono::duration<double>>
-                                        (Clock::now() - m_start);
-    return dur.count();
-}
+using boost::chrono::duration;
+using boost::ratio;
 
-int Timer::getElapsedMillis()
+double Timer::getElapsedSecs() const noexcept
 {
-    auto dur = std::chrono::duration_cast<std::chrono::duration<int, std::milli>>
-                                        (Clock::now() - m_start);
-    return dur.count();
+    return duration<double>{Clock::now() - m_start}.count();
 }
 
 void Timer::restart()
