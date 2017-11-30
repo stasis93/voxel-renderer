@@ -1,19 +1,32 @@
 #ifndef TIMER_H_INCLUDED
 #define TIMER_H_INCLUDED
 
-#include <boost/chrono.hpp>
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+    #include <windows.h>
+    #define WIN
+#endif
 
-using Clock = boost::chrono::high_resolution_clock;
-using TimePoint = boost::chrono::time_point<Clock>;
+#ifdef WIN
+    using TimePoint = LARGE_INTEGER;
+#else
+    #include <chrono>
+    using Clock = std::chrono::high_resolution_clock;
+    using TimePoint = std::chrono::time_point<Clock>;
+#endif
+
 
 class Timer
 {
 public:
-    double getElapsedSecs() const noexcept;
+    Timer();
+    double getElapsedSecs();
     void restart();
 
 private:
-    TimePoint m_start {Clock::now()};
+#ifdef WIN
+    LARGE_INTEGER& freq();
+#endif
+    TimePoint m_start;
 };
 
 #endif // TIMER_H_INCLUDED
