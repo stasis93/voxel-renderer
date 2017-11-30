@@ -15,7 +15,8 @@ void main()
     bool isWater = aPos.w < 0 ? aPos.w == -7 : aPos.w == 7;
     float offs_y = 0;
     if (isWater) {
-        offs_y = -0.5 + 0.125 * sin(time + aPos.x * aPos.z * waterOffsCoeff);
+        offs_y = -0.4 + 0.1 * (sin(time + aPos.x * waterOffsCoeff) +
+                               cos(time + aPos.z * waterOffsCoeff));
     }
 
 	gl_Position = proj_view * model * vec4(aPos.x, aPos.y + offs_y, aPos.z, 1);

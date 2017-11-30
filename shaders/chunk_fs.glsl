@@ -4,7 +4,7 @@ in vec4 texCoord;
 out vec4 color;
 uniform sampler2D blockTexture;
 
-const vec4 fog_color = vec4(0.4f, 0.5f, 0.4f, 1.0f);
+const vec4 fog_color = vec4(0.3f, 0.5f, 0.4f, 1.0f);
 const float fog_density = .00003;
 
 void main()
@@ -25,8 +25,8 @@ void main()
 
     color = texture(blockTexture, texPos);
 
-    if (texCoord.w > 0)
-        color *= 0.65f;
+    if (texCoord.w > 0) // simulate diffusion lighting
+        color *= 0.6f;
 
     if (color.a < 0.5f)
         discard;

@@ -25,7 +25,7 @@ void fillChunkColumn(std::vector<Chunk> &column)
     int ix = colPos.x * Blocks::CX / 16.0f,
         iz = colPos.z * Blocks::CZ / 16.0f,
         y_max = column.size() * Blocks::CY;
-    int waterLvl = y_max / 8;
+    int waterLvl = y_max / 10;
 
     for (int z = 0; z < Blocks::CZ; z++)
     for (int x = 0; x < Blocks::CX; x++)
