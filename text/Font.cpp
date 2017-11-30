@@ -187,7 +187,6 @@ void Font::renderText(const std::string& text, float px, float py)
             y += (gi.advance_y >> 6) * sy;
         }
     }
-    glBindVertexArray(0);
     glDisable(GL_BLEND);
 }
 

@@ -5,7 +5,7 @@
 
 #include "shader.h"
 #include "camera.h"
-#include "superchunk.h"
+#include "chunkmanager.h"
 #include "timer.h"
 #include "frustrum.h"
 #include "Skybox.h"

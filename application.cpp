@@ -82,7 +82,6 @@ void Application::initGL()
         onError("gladLoadGLLoader failed");
 
     glfwSwapInterval(m_config.rendering().vsync ? 1 : 0);
-
     glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwGetCursorPos(m_window, &m_xprev, &m_yprev);
 

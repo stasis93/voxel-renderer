@@ -1,5 +1,5 @@
 #include "chunk.h"
-#include "superchunk.h"
+#include "chunkmanager.h"
 #include "glad/glad.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/noise.hpp>
@@ -135,7 +135,7 @@ void Chunk::updateVBO()
 
             if ((x > 0 && !m_blocks[x - 1][y][z]) ||                        // if previous block is empty
                 (x > 0 && m_blocks[x - 1][y][z] & transp_bit) ||
-                (x > 0 && neighbour && neighbour->getRaw({CX - 1, y, z}) & transp_bit) ||
+                (x == 0 && neighbour && neighbour->getRaw({CX - 1, y, z}) & transp_bit) ||
                 (x == 0 && neighbour && !neighbour->getRaw({CX - 1, y, z})) ||   // if we're on the edge and adjacent block from neighbor chunk is empty
                 (x == 0 && neighbour && neighbour->getRaw({CX - 1, y, z}) & transp_bit) ||
                 (x == 0 && !neighbour))                                     // if we're on the edge and neighbor _chunk_ is empty

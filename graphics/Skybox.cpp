@@ -88,7 +88,6 @@ void Skybox::render(const glm::mat4& transform)
     glBindVertexArray(m_vao);
     m_texture->bind();
     glDrawArrays(GL_TRIANGLES, 0, 36);
-    glBindVertexArray(0);
 
     glDepthFunc(GL_LESS);
 }
