@@ -12,11 +12,6 @@ FPSCounter::FPSCounter()
     m_text.setText("");
 }
 
-void FPSCounter::setString(const std::string& text)
-{
-    m_text.setText(text);
-}
-
 void FPSCounter::setPosition(float px, float py)
 {
     m_text.setPosition(px, py);

@@ -12,7 +12,6 @@ class FPSCounter
 public:
     FPSCounter();
 
-    void setString(const std::string& text);
     void setPosition(float px, float py);
     void render();
 

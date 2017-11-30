@@ -7,8 +7,6 @@
 
 FTLibrary::FTLibrary()
 {
-    std::cout << __FUNCTION__ << std::endl;
-
     if (FT_Init_FreeType(&m_ftLibrary)) {
         std::cerr << "FT_Init_FreeType failed" << std::endl;
         exit(EXIT_FAILURE);
@@ -17,8 +15,6 @@ FTLibrary::FTLibrary()
 
 FTLibrary::~FTLibrary()
 {
-    std::cout << __FUNCTION__ << std::endl;
-
     FT_Done_FreeType(m_ftLibrary);
 }
 

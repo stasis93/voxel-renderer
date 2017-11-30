@@ -7,8 +7,6 @@
 #include "noncopyable.h"
 
 // Just copying from FT headers to make forward-declaring possible
-class FT_LibraryRec_;
-using FT_Library = FT_LibraryRec_*;
 class FT_FaceRec_;
 using FT_Face = FT_FaceRec_*;
 
