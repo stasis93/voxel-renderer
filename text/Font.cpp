@@ -12,6 +12,8 @@
 #include "text.h"
 #include "ftlibrary.h"
 
+#include "drawcalltrack.h"
+
 Font::Font(GLFWwindow* context)
     : m_context(context)
 {
@@ -181,7 +183,7 @@ void Font::renderText(const std::string& text, float px, float py)
             glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
             glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(box), box);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+            glDrawArrays_(GL_TRIANGLE_STRIP, 0, 4);
 
             x += (gi.advance_x >> 6) * sx;
             y += (gi.advance_y >> 6) * sy;

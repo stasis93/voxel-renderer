@@ -6,9 +6,7 @@
 #include <cassert>
 
 #include "utils.h"
-
-/* used in updateVBO (don't skip cube face if neighbor block has this bit set to 1) */
-char const transp_bit = 0b10000000;
+#include "drawcalltrack.h"
 
 using byte4 = glm::tvec4<GLbyte>;
 

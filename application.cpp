@@ -20,6 +20,7 @@
 #include "heightmapprovider.h"
 #include "settings.h"
 #include "textureloader.h"
+#include "drawcalltrack.h"
 
 
 Application::Application()
@@ -215,6 +216,11 @@ void Application::handleKbd(float dt)
 
 void Application::render()
 {
+#ifdef TRACK_GL_DRAWCALLS
+    m_info.setDrawCallCount(DrawCallTrack::getDrawCallCount());
+    m_info.setTriangleCount(DrawCallTrack::getTriangleCount());
+    DrawCallTrack::resetCount();
+#endif
     updateFrustrum();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
