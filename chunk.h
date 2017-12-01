@@ -30,13 +30,23 @@ struct Chunk
 
     Blocks::Type    get(const Position3 &pos) const;
     uint8_t         getRaw(const Position3 &pos) const;
+
     void            set(const Position3 &pos, Blocks::Type type);
     void            setRaw(const Position3 &pos, uint8_t type);
+
     void            updateVBO();
     void            render();
+
     const Position3& getPosition() const;
+
     bool            empty();
     bool            changed();
+
+private:
+    enum class Face {NegX = 0, PosX, NegY, PosY, NegZ, PosZ};
+
+    bool            shouldDrawFace(Position3 p, Face face);
+    uint8_t         getAdjacentBlock(Position3 p, Face face);
 
 private:
     bool            m_changed {false};

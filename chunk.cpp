@@ -12,6 +12,13 @@ using byte4 = glm::tvec4<GLbyte>;
 
 using namespace Blocks;
 
+static inline bool isTransparent(uint8_t block)
+{
+    return block == static_cast<uint8_t>(Blocks::Type::None) ||
+           block == static_cast<uint8_t>(Blocks::Type::Water) ||
+           block == static_cast<uint8_t>(Blocks::Type::Glass);
+}
+
 Chunk::Chunk(ChunkManager* manager, Position3 index)
     : m_parent(manager), m_pos(index)
 {
@@ -44,7 +51,7 @@ bool Chunk::changed()
 Blocks::Type Chunk::get(const Position3 &pos) const
 {
     assert(pos.x < CX && pos.y < CY && pos.z < CZ);
-    return static_cast<Blocks::Type>(m_blocks[pos.x][pos.y][pos.z] & ~transp_bit);
+    return static_cast<Blocks::Type>(m_blocks[pos.x][pos.y][pos.z]);
 }
 
 uint8_t Chunk::getRaw(const Position3 &pos) const
@@ -76,139 +83,86 @@ void Chunk::updateVBO()
     byte4 vertices[CX * CY * CZ * 6 * 6];
     int i = 0;
 
-    for(auto x = 0; x < CX; x++)
-    for(auto y = 0; y < CY; y++)
-    for(auto z = 0; z < CZ; z++)
+    for (auto x = 0; x < CX; x++)
+    for (auto y = 0; y < CY; y++)
+    for (auto z = 0; z < CZ; z++)
     {
-        Chunk *neighbour;
         uint8_t type = m_blocks[x][y][z];
 
-        // Empty block?
         if (type == static_cast<uint8_t>(Blocks::Type::None))
             continue;
-        if (type == static_cast<uint8_t>(Blocks::Type::Glass) ||
-            type == static_cast<uint8_t>(Blocks::Type::Water))
-            m_blocks[x][y][z] |= transp_bit;
-
-        uint8_t type_ = type & ~transp_bit;
-
         // View from positive y
-        neighbour = m_parent->getChunk({m_pos.x, m_pos.y + 1, m_pos.z});
-
-        if ((y < CY - 1 && !m_blocks[x][y + 1][z]) ||
-            (y < CY - 1 && m_blocks[x][y + 1][z] & transp_bit) ||
-            (y == CY - 1 && neighbour && !neighbour->getRaw({x, 0, z})) ||
-            (y == CY - 1 && neighbour && neighbour->getRaw({x, 0, z}) & transp_bit) ||
-            (y == CY - 1 && !neighbour))
+        if (shouldDrawFace({x, y, z}, Face::PosY))
         {
-            vertices[i++] = byte4(x,     y + 1, z,     -type_);
-            vertices[i++] = byte4(x,     y + 1, z + 1, -type_);
-            vertices[i++] = byte4(x + 1, y + 1, z + 1, -type_);
-            vertices[i++] = byte4(x + 1, y + 1, z + 1, -type_);
-            vertices[i++] = byte4(x + 1, y + 1, z,     -type_);
-            vertices[i++] = byte4(x,     y + 1, z,     -type_);
+            vertices[i++] = byte4(x,     y + 1, z,     -type);
+            vertices[i++] = byte4(x,     y + 1, z + 1, -type);
+            vertices[i++] = byte4(x + 1, y + 1, z + 1, -type);
+            vertices[i++] = byte4(x + 1, y + 1, z + 1, -type);
+            vertices[i++] = byte4(x + 1, y + 1, z,     -type);
+            vertices[i++] = byte4(x,     y + 1, z,     -type);
         }
-        if (type_ == static_cast<uint8_t>(Blocks::Type::Water))
+        if (type == static_cast<uint8_t>(Blocks::Type::Water))
             continue;
-
         // View from negative y
-        neighbour = m_parent->getChunk({m_pos.x, m_pos.y - 1, m_pos.z});
-
-        if ((y > 0 && !m_blocks[x][y - 1][z]) ||
-            (y > 0 && m_blocks[x][y - 1][z] & transp_bit) ||
-            (y == 0 && neighbour && !neighbour->getRaw({x, CY - 1, z})) ||
-            (y == 0 && neighbour && neighbour->getRaw({x, CY - 1, z}) & transp_bit) ||
-            (y == 0 && !neighbour))
+        if (shouldDrawFace({x, y, z}, Face::NegY))
         {
-            vertices[i++] = byte4(x,     y,     z,     -type_);  // negative values are used in fragment shader
-            vertices[i++] = byte4(x + 1, y,     z,     -type_);  // for +y and -y faces, positive for 4 others
-            vertices[i++] = byte4(x,     y,     z + 1, -type_);
-            vertices[i++] = byte4(x,     y,     z + 1, -type_);
-            vertices[i++] = byte4(x + 1, y,     z,     -type_);
-            vertices[i++] = byte4(x + 1, y,     z + 1, -type_);
+            vertices[i++] = byte4(x,     y,     z,     -type);  // negative values are used in fragment shader to obtain texture coords
+            vertices[i++] = byte4(x + 1, y,     z,     -type);  // for +y and -y faces, positive for 4 others
+            vertices[i++] = byte4(x,     y,     z + 1, -type);
+            vertices[i++] = byte4(x,     y,     z + 1, -type);
+            vertices[i++] = byte4(x + 1, y,     z,     -type);
+            vertices[i++] = byte4(x + 1, y,     z + 1, -type);
         }
-
         // View from negative x
-        neighbour = m_parent->getChunk({m_pos.x - 1, m_pos.y, m_pos.z});
-
-        if ((x > 0 && !m_blocks[x - 1][y][z]) ||                        // if previous block is empty
-            (x > 0 && m_blocks[x - 1][y][z] & transp_bit) ||
-            (x == 0 && neighbour && neighbour->get({CX - 1, y, z}) == Blocks::Type::Water) ||
-            (x == 0 && neighbour && !neighbour->getRaw({CX - 1, y, z})) ||   // if we're on the edge and adjacent block from neighbor chunk is empty
-            (x == 0 && neighbour && neighbour->getRaw({CX - 1, y, z}) & transp_bit) ||
-            (x == 0 && !neighbour))                                     // if we're on the edge and neighbor _chunk_ is empty
+        if (shouldDrawFace({x, y, z}, Face::NegX))
         {
-            vertices[i++] = byte4(x,     y,     z,     type_);
-            vertices[i++] = byte4(x,     y,     z + 1, type_);
-            vertices[i++] = byte4(x,     y + 1, z,     type_);
-            vertices[i++] = byte4(x,     y + 1, z,     type_);
-            vertices[i++] = byte4(x,     y,     z + 1, type_);
-            vertices[i++] = byte4(x,     y + 1, z + 1, type_);
+            vertices[i++] = byte4(x,     y,     z,     type);
+            vertices[i++] = byte4(x,     y,     z + 1, type);
+            vertices[i++] = byte4(x,     y + 1, z,     type);
+            vertices[i++] = byte4(x,     y + 1, z,     type);
+            vertices[i++] = byte4(x,     y,     z + 1, type);
+            vertices[i++] = byte4(x,     y + 1, z + 1, type);
         }
-
         // View from positive x
-        neighbour = m_parent->getChunk({m_pos.x + 1, m_pos.y, m_pos.z});
-
-        if ((x < CX - 1 && !m_blocks[x + 1][y][z]) ||
-            (x < CX - 1 && m_blocks[x + 1][y][z] & transp_bit) ||
-            (x == CX - 1 && neighbour && neighbour->get({0, y, z}) == Blocks::Type::Water) ||
-            (x == CX - 1 && neighbour && !neighbour->getRaw({0, y, z})) ||
-            (x == CX - 1 && neighbour && neighbour->getRaw({0, y, z}) & transp_bit) ||
-            (x == CX - 1 && !neighbour))
+        if (shouldDrawFace({x, y, z}, Face::PosX))
         {
-            vertices[i++] = byte4(x + 1, y,     z,     type_);
-            vertices[i++] = byte4(x + 1, y + 1, z,     type_);
-            vertices[i++] = byte4(x + 1, y,     z + 1, type_);
-            vertices[i++] = byte4(x + 1, y + 1, z,     type_);
-            vertices[i++] = byte4(x + 1, y + 1, z + 1, type_);
-            vertices[i++] = byte4(x + 1, y,     z + 1, type_);
+            vertices[i++] = byte4(x + 1, y,     z,     type);
+            vertices[i++] = byte4(x + 1, y + 1, z,     type);
+            vertices[i++] = byte4(x + 1, y,     z + 1, type);
+            vertices[i++] = byte4(x + 1, y + 1, z,     type);
+            vertices[i++] = byte4(x + 1, y + 1, z + 1, type);
+            vertices[i++] = byte4(x + 1, y,     z + 1, type);
         }
-
         // View from negative z
-        neighbour = m_parent->getChunk({m_pos.x, m_pos.y, m_pos.z - 1});
-
-        if ((z > 0 && !m_blocks[x][y][z - 1]) ||
-            (z > 0 && m_blocks[x][y][z - 1] & transp_bit) ||
-            (z == 0 && neighbour && neighbour->get({x, y, CZ - 1}) == Blocks::Type::Water) ||
-            (z == 0 && neighbour && !neighbour->getRaw({x, y, CZ - 1})) ||
-            (z == 0 && neighbour && neighbour->getRaw({x, y, CZ - 1}) & transp_bit) ||
-            (z == 0 && !neighbour))
+        if (shouldDrawFace({x, y, z}, Face::NegZ))
         {
-            vertices[i++] = byte4(x,     y,     z,     type_);
-            vertices[i++] = byte4(x,     y + 1, z,     type_);
-            vertices[i++] = byte4(x + 1, y + 1, z,     type_);
-            vertices[i++] = byte4(x + 1, y + 1, z,     type_);
-            vertices[i++] = byte4(x + 1, y,     z,     type_);
-            vertices[i++] = byte4(x,     y,     z,     type_);
+            vertices[i++] = byte4(x,     y,     z,     type);
+            vertices[i++] = byte4(x,     y + 1, z,     type);
+            vertices[i++] = byte4(x + 1, y + 1, z,     type);
+            vertices[i++] = byte4(x + 1, y + 1, z,     type);
+            vertices[i++] = byte4(x + 1, y,     z,     type);
+            vertices[i++] = byte4(x,     y,     z,     type);
         }
-
         // View from positive z
-        neighbour = m_parent->getChunk({m_pos.x, m_pos.y, m_pos.z + 1});
-
-        if ((z < CZ - 1 && !m_blocks[x][y][z + 1]) ||
-            (z < CZ - 1 && m_blocks[x][y][z + 1] & transp_bit) ||
-            (z == CZ - 1 && neighbour && neighbour->get({x, y, 0}) == Blocks::Type::Water) ||
-            (z == CZ - 1 && neighbour && !neighbour->getRaw({x, y, 0})) ||
-            (z == CZ - 1 && neighbour && neighbour->getRaw({x, y, 0}) & transp_bit) ||
-            (z == CZ - 1 && !neighbour))
+        if (shouldDrawFace({x, y, z}, Face::PosZ))
         {
-            vertices[i++] = byte4(x,     y,     z + 1, type_);
-            vertices[i++] = byte4(x + 1, y,     z + 1, type_);
-            vertices[i++] = byte4(x + 1, y + 1, z + 1, type_);
-            vertices[i++] = byte4(x + 1, y + 1, z + 1, type_);
-            vertices[i++] = byte4(x,     y + 1, z + 1, type_);
-            vertices[i++] = byte4(x,     y,     z + 1, type_);
+            vertices[i++] = byte4(x,     y,     z + 1, type);
+            vertices[i++] = byte4(x + 1, y,     z + 1, type);
+            vertices[i++] = byte4(x + 1, y + 1, z + 1, type);
+            vertices[i++] = byte4(x + 1, y + 1, z + 1, type);
+            vertices[i++] = byte4(x,     y + 1, z + 1, type);
+            vertices[i++] = byte4(x,     y,     z + 1, type);
         }
     }
-
     m_elements = i;
     if (m_elements > 0)
     {
         m_empty = false;
         glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
         glBufferSubData(GL_ARRAY_BUFFER, 0, m_elements * sizeof *vertices, vertices);
-        Utils::glCheckError();
     }
+    else
+        m_empty = true;
     m_changed = false;
 }
 
@@ -218,10 +172,97 @@ void Chunk::render()
         return;
 
     glBindVertexArray(m_vao);
-    glDrawArrays(GL_TRIANGLES, 0, m_elements);
+    glDrawArrays_(GL_TRIANGLES, 0, m_elements);
 }
 
 const Position3& Chunk::getPosition() const
 {
     return m_pos;
+}
+
+bool Chunk::shouldDrawFace(Position3 p, Face face)
+{
+    auto block = getAdjacentBlock(p, face);
+    if (isTransparent(block))
+        return true;
+    return false;
+}
+
+uint8_t Chunk::getAdjacentBlock(Position3 p, Face face)
+{
+    auto block = static_cast<uint8_t>(Type::None);
+    Chunk* n = nullptr;
+
+    switch (face)
+    {
+    case Face::NegX:
+        if (p.x == 0 )
+        {
+            n = m_parent->getChunk({m_pos.x - 1, m_pos.y, m_pos.z});
+            if (n)
+                block = n->getRaw({CX - 1, p.y, p.z});
+        }
+        else
+            block = m_blocks[p.x - 1][p.y][p.z];
+        break;
+
+    case Face::PosX:
+        if (p.x == CX - 1)
+        {
+            n = m_parent->getChunk({m_pos.x + 1, m_pos.y, m_pos.z});
+            if (n)
+                block = n->getRaw({0, p.y, p.z});
+        }
+        else
+            block = m_blocks[p.x + 1][p.y][p.z];
+        break;
+
+    case Face::NegY:
+        if (p.y == 0 )
+        {
+            n = m_parent->getChunk({m_pos.x, m_pos.y - 1, m_pos.z});
+            if (n)
+                block = n->getRaw({p.x, CY - 1, p.z});
+        }
+        else
+            block = m_blocks[p.x][p.y - 1][p.z];
+        break;
+
+    case Face::PosY:
+        if (p.y == CY - 1 )
+        {
+            n = m_parent->getChunk({m_pos.x, m_pos.y + 1, m_pos.z});
+            if (n)
+                block = n->getRaw({p.x, 0, p.z});
+        }
+        else
+            block = m_blocks[p.x][p.y + 1][p.z];
+        break;
+
+    case Face::NegZ:
+        if (p.z == 0 )
+        {
+            n = m_parent->getChunk({m_pos.x, m_pos.y, m_pos.z - 1});
+            if (n)
+                block = n->getRaw({p.x, p.y, CZ - 1});
+        }
+        else
+            block = m_blocks[p.x][p.y][p.z - 1];
+        break;
+
+    case Face::PosZ:
+        if (p.z == CZ - 1)
+        {
+            n = m_parent->getChunk({m_pos.x, m_pos.y, m_pos.z + 1});
+            if (n)
+                block = n->getRaw({p.x, p.y, 0});
+        }
+        else
+            block = m_blocks[p.x][p.y][p.z + 1];
+        break;
+
+    default:
+        break;
+    }
+    return block;
 }
