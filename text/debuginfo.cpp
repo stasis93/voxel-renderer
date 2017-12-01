@@ -4,16 +4,7 @@
 
 DebugInfo::DebugInfo()
 {
-    m_font.loadFromFile("fonts/arial.ttf");
-    m_font.setSize(14);
-    m_text.setColor(1, 0, 1);
-    m_text.setFont(&m_font);
     m_text.setPosition(1, 50);
-}
-
-void DebugInfo::setContext(GLFWwindow* context)
-{
-    m_font.setContext(context);
 }
 
 void DebugInfo::setPositionInfo(float x, float y, float z)
