@@ -1,7 +1,8 @@
 #include "camera.h"
 #include "glad/glad.h"
+#include <cmath>
 
-Camera::Camera(const glm::vec3 & position, float yaw, float pitch)
+Camera::Camera(const glm::vec3& position, float yaw, float pitch)
     : m_pos(position)
     , m_orientation({0.0f, 0.0f, -1.0f})
     , m_worldUp({0.0f, 1.0f, 0.0f})
@@ -70,4 +71,16 @@ void Camera::update()
 
     m_right = glm::normalize(glm::cross(m_orientation, m_worldUp));
     m_up    = glm::normalize(glm::cross(m_right, m_orientation));
+}
+
+void Camera::setDirection(const glm::vec3& direction)
+{
+    auto dir = glm::normalize(direction);
+    m_yaw = glm::degrees(std::atan2(direction.z, direction.x));
+
+    float xz_len = std::sqrt(direction.z * direction.z + direction.x * direction.x);
+    m_pitch = glm::degrees(std::atan2(direction.y, xz_len));
+
+    validateYawPitch();
+    update();
 }
