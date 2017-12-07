@@ -55,6 +55,11 @@ Application::Application()
     m_info.setContext(m_window);
 
     Utils::glCheckError();
+
+    m_player.bindCamera(&m_camera);
+    m_player.setWorldData(&m_chunkManager);
+    m_player.setPosition({0, 100, 0});
+    m_player.setDirection({0, 0, 1});
 }
 
 void Application::initGL()
@@ -140,7 +145,7 @@ void Application::cursorPosCallback(double x, double y)
     double dy = y - m_yprev;
     m_xprev = x;
     m_yprev = y;
-    m_camera.rotate(dx / 10, -dy / 10);
+    m_player.rotate(dx / 10, -dy / 10);
 }
 
 void Application::resizeCallback(int width, int height)
@@ -190,11 +195,12 @@ void Application::pollEvents()
 void Application::update(float dt_sec)
 {
     handleKbd(dt_sec);
-    const glm::vec3& camPos = m_camera.getPosition();
     const glm::vec3& camDir = m_camera.getDirection();
-    m_chunkManager.update({(int)camPos.x, (int)camPos.y, (int)camPos.z});
+    const glm::vec3& playerPos = m_player.getPosition();
+    m_chunkManager.update({(int)playerPos.x, (int)playerPos.y, (int)playerPos.z});
+    m_player.update();
 
-    m_info.setPositionInfo(camPos.x, camPos.y, camPos.z);
+    m_info.setPositionInfo(playerPos.x, playerPos.y, playerPos.z);
     m_info.setViewDirectionInfo(camDir.x, camDir.y, camDir.z);
 }
 
@@ -203,15 +209,17 @@ void Application::handleKbd(float dt)
     float dist = dt * 10;
     if (glfwGetKey(m_window, GLFW_KEY_LEFT_SHIFT))
         dist *= 10.0f;
+    else if (glfwGetKey(m_window, GLFW_KEY_LEFT_CONTROL))
+        dist /= 10.0f;
 
     if (glfwGetKey(m_window, GLFW_KEY_W))
-        m_camera.move(Camera::Forward, dist);
+        m_player.move(Player::Forward, dist);
     else if (glfwGetKey(m_window, GLFW_KEY_S))
-        m_camera.move(Camera::Back, dist);
+        m_player.move(Player::Back, dist);
     if (glfwGetKey(m_window, GLFW_KEY_A))
-        m_camera.move(Camera::Left, dist);
+        m_player.move(Player::Left, dist);
     else if (glfwGetKey(m_window, GLFW_KEY_D))
-        m_camera.move(Camera::Right, dist);
+        m_player.move(Player::Right, dist);
 }
 
 void Application::render()

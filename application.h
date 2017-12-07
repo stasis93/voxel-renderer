@@ -4,6 +4,7 @@
 #include <glm/mat4x4.hpp>
 
 #include "shader.h"
+#include "player.h"
 #include "camera.h"
 #include "chunkmanager.h"
 #include "timer.h"
@@ -47,6 +48,7 @@ private:
 private:
     GLFWwindow*             m_window {nullptr};
 
+    Player                  m_player;
     Camera                  m_camera;
     Frustrum                m_frustrum;
     ChunkManager            m_chunkManager;
