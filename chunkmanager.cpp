@@ -122,8 +122,8 @@ bool ChunkManager::tryUnloadAtPosition(const Position3& pos)
 {
     for (const ChunkColumn *columnToRender : m_renderList)
     {
-        if ((*columnToRender)[0].getPosition().x == pos.x &&
-            (*columnToRender)[0].getPosition().z == pos.z)
+        if ((*columnToRender)[0].getIndex().x == pos.x &&
+            (*columnToRender)[0].getIndex().z == pos.z)
             return false;
     }
     auto it = m_chunkColumns.find(pos);
@@ -137,7 +137,7 @@ void ChunkManager::unloadSpareChunkColumns()
     while (m_chunkColumns.size() > (unsigned)m_config.world().maxChunkColsLoaded)
     {
         ChunkColumn *colToUnload = m_loadedQueue.front();
-        const Position3& posToUnload = (*colToUnload)[0].getPosition();
+        const Position3& posToUnload = (*colToUnload)[0].getIndex();
 
         if (tryUnloadAtPosition(posToUnload))
         {
@@ -182,7 +182,20 @@ uint8_t ChunkManager::get(const Position3& pos)
         y = pos.y % Blocks::CY,
         z = pos.z % Blocks::CZ;
 
-    assert(cy >= 0 && cy < m_config.world().chunksInCol);
+    if (x < 0) {
+        cx -= 1;
+        x = Blocks::CX + x;
+    }
+    if (y < 0) {
+        cy -= 1;
+        y = Blocks::CY + y;
+    }
+    if (z < 0) {
+        cz -= 1;
+        z = Blocks::CZ + z;
+    }
+//    assert(cy >= 0 && cy < m_config.world().chunksInCol);
+    assert(x >= 0 && x < Blocks::CX && y >= 0 && y < Blocks::CY && z >= 0 && z < Blocks::CZ);
 
     Chunk *ch = getChunk({cx, cy, cz});
 
@@ -194,6 +207,7 @@ uint8_t ChunkManager::get(const Position3& pos)
 
 void ChunkManager::set(const Position3& pos, uint8_t type)
 {
+    // it's wrong for negative index... need fix
     int cx = pos.x / Blocks::CX,
         cy = pos.y / Blocks::CY,
         cz = pos.z / Blocks::CZ;

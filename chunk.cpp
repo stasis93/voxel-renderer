@@ -2,7 +2,6 @@
 #include "chunkmanager.h"
 #include "glad/glad.h"
 #include <glm/glm.hpp>
-#include <glm/gtc/noise.hpp>
 #include <cassert>
 
 #include "utils.h"
@@ -17,6 +16,10 @@ static inline bool isTransparent(uint8_t block)
     return block == static_cast<uint8_t>(Blocks::Type::None) ||
            block == static_cast<uint8_t>(Blocks::Type::Water) ||
            block == static_cast<uint8_t>(Blocks::Type::Glass);
+}
+static inline bool isWater(uint8_t block)
+{
+    return block == static_cast<uint8_t>(Blocks::Type::Water);
 }
 
 Chunk::Chunk(ChunkManager* manager, Position3 index)
@@ -91,28 +94,6 @@ void Chunk::updateVBO()
 
         if (type == static_cast<uint8_t>(Blocks::Type::None))
             continue;
-        // View from positive y
-        if (shouldDrawFace({x, y, z}, Face::PosY))
-        {
-            vertices[i++] = byte4(x,     y + 1, z,     -type);
-            vertices[i++] = byte4(x,     y + 1, z + 1, -type);
-            vertices[i++] = byte4(x + 1, y + 1, z + 1, -type);
-            vertices[i++] = byte4(x + 1, y + 1, z + 1, -type);
-            vertices[i++] = byte4(x + 1, y + 1, z,     -type);
-            vertices[i++] = byte4(x,     y + 1, z,     -type);
-        }
-        if (type == static_cast<uint8_t>(Blocks::Type::Water))
-            continue;
-        // View from negative y
-        if (shouldDrawFace({x, y, z}, Face::NegY))
-        {
-            vertices[i++] = byte4(x,     y,     z,     -type);  // negative values are used in fragment shader to obtain texture coords
-            vertices[i++] = byte4(x + 1, y,     z,     -type);  // for +y and -y faces, positive for 4 others
-            vertices[i++] = byte4(x,     y,     z + 1, -type);
-            vertices[i++] = byte4(x,     y,     z + 1, -type);
-            vertices[i++] = byte4(x + 1, y,     z,     -type);
-            vertices[i++] = byte4(x + 1, y,     z + 1, -type);
-        }
         // View from negative x
         if (shouldDrawFace({x, y, z}, Face::NegX))
         {
@@ -132,6 +113,26 @@ void Chunk::updateVBO()
             vertices[i++] = byte4(x + 1, y + 1, z,     type);
             vertices[i++] = byte4(x + 1, y + 1, z + 1, type);
             vertices[i++] = byte4(x + 1, y,     z + 1, type);
+        }
+        // View from negative y
+        if (shouldDrawFace({x, y, z}, Face::NegY))
+        {
+            vertices[i++] = byte4(x,     y,     z,     -type);  // negative values are used in fragment shader to obtain texture coords
+            vertices[i++] = byte4(x + 1, y,     z,     -type);  // for +y and -y faces, positive for 4 others
+            vertices[i++] = byte4(x,     y,     z + 1, -type);
+            vertices[i++] = byte4(x,     y,     z + 1, -type);
+            vertices[i++] = byte4(x + 1, y,     z,     -type);
+            vertices[i++] = byte4(x + 1, y,     z + 1, -type);
+        }
+        // View from positive y
+        if (shouldDrawFace({x, y, z}, Face::PosY))
+        {
+            vertices[i++] = byte4(x,     y + 1, z,     -type);
+            vertices[i++] = byte4(x,     y + 1, z + 1, -type);
+            vertices[i++] = byte4(x + 1, y + 1, z + 1, -type);
+            vertices[i++] = byte4(x + 1, y + 1, z + 1, -type);
+            vertices[i++] = byte4(x + 1, y + 1, z,     -type);
+            vertices[i++] = byte4(x,     y + 1, z,     -type);
         }
         // View from negative z
         if (shouldDrawFace({x, y, z}, Face::NegZ))
@@ -175,15 +176,19 @@ void Chunk::render()
     glDrawArrays_(GL_TRIANGLES, 0, m_elements);
 }
 
-const Position3& Chunk::getPosition() const
+const Position3& Chunk::getIndex() const
 {
     return m_pos;
 }
 
 bool Chunk::shouldDrawFace(Position3 p, Face face)
 {
-    auto block = getAdjacentBlock(p, face);
-    if (isTransparent(block))
+    auto neighbour = getAdjacentBlock(p, face);
+    auto current = m_blocks[p.x][p.y][p.z];
+
+    if (isWater(current) && isWater(neighbour))
+        return false;
+    if (isTransparent(neighbour))
         return true;
     return false;
 }
@@ -196,7 +201,7 @@ uint8_t Chunk::getAdjacentBlock(Position3 p, Face face)
     switch (face)
     {
     case Face::NegX:
-        if (p.x == 0 )
+        if (p.x == 0)
         {
             n = m_parent->getChunk({m_pos.x - 1, m_pos.y, m_pos.z});
             if (n)
@@ -218,7 +223,7 @@ uint8_t Chunk::getAdjacentBlock(Position3 p, Face face)
         break;
 
     case Face::NegY:
-        if (p.y == 0 )
+        if (p.y == 0)
         {
             n = m_parent->getChunk({m_pos.x, m_pos.y - 1, m_pos.z});
             if (n)
@@ -229,7 +234,7 @@ uint8_t Chunk::getAdjacentBlock(Position3 p, Face face)
         break;
 
     case Face::PosY:
-        if (p.y == CY - 1 )
+        if (p.y == CY - 1)
         {
             n = m_parent->getChunk({m_pos.x, m_pos.y + 1, m_pos.z});
             if (n)
@@ -240,7 +245,7 @@ uint8_t Chunk::getAdjacentBlock(Position3 p, Face face)
         break;
 
     case Face::NegZ:
-        if (p.z == 0 )
+        if (p.z == 0)
         {
             n = m_parent->getChunk({m_pos.x, m_pos.y, m_pos.z - 1});
             if (n)

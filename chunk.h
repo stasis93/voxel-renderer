@@ -23,8 +23,9 @@ enum class Type
 
 class ChunkManager;
 
-struct Chunk
+class Chunk
 {
+public:
                     Chunk(ChunkManager* manager, Position3 index);
                     ~Chunk();
 
@@ -37,7 +38,7 @@ struct Chunk
     void            updateVBO();
     void            render();
 
-    const Position3& getPosition() const;
+    const Position3& getIndex() const;
 
     bool            empty();
     bool            changed();

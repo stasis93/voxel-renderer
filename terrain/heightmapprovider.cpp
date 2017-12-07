@@ -47,9 +47,12 @@ void fillChunkColumn(std::vector<Chunk> &column)
 
         if (val < waterLvl)
         {
-            int chunk_y = (waterLvl - 1) / Blocks::CY;
-            Chunk &chunk = column[chunk_y];
-            chunk.set({x, (waterLvl - 1) % Blocks::CY, z}, Blocks::Type::Water);
+            for (int y = val; y < waterLvl; y++)
+            {
+                int chunk_y = y / Blocks::CY;
+                Chunk &chunk = column[chunk_y];
+                chunk.set({x, y % Blocks::CY, z}, Blocks::Type::Water);
+            }
         }
 
         // set top-block's type
