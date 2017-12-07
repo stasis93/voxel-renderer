@@ -6,7 +6,6 @@
 #include "font.h"
 #include "text.h"
 
-class GLFWwindow;
 
 class TextField
 {
@@ -24,7 +23,6 @@ public:
     void setColor(float r, float g, float b);
 
 protected:
-    GLFWwindow* m_context;
     Font        m_font;
     Text        m_text;
 };

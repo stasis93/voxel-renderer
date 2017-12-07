@@ -20,7 +20,7 @@ static Blocks::Type chooseBlock(float c);
 
 void fillChunkColumn(std::vector<Chunk> &column)
 {
-    const Position3& colPos = column[0].getPosition();
+    const Position3& colPos = column[0].getIndex();
 
     int ix = colPos.x * Blocks::CX / 16.0f,
         iz = colPos.z * Blocks::CZ / 16.0f,

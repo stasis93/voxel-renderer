@@ -36,23 +36,11 @@ void DebugInfo::setTriangleCount(int count)
 
 void DebugInfo::updateText()
 {
-    std::string dc, tr;
-
-    if (m_drawCalls)
-        dc = std::to_string(m_drawCalls);
-    else
-        dc = "N/A";
-
-    if (m_triangles)
-        tr = std::to_string(m_triangles);
-    else
-        tr = "N/A";
-
     std::stringstream ss;
     ss << std::fixed << std::setprecision(2) <<
     "pos: " << m_pos[0] << "; " << m_pos[1] << "; " << m_pos[2] <<
     ";\ndir: " << m_dir[0] << "; " << m_dir[1] << "; " << m_dir[2] <<
-    ";\ndraw calls: " << dc << ";\nTriangles: " << tr << ";";
+    ";\ndraw calls: " << m_drawCalls << "\ntriangles: " << m_triangles;
     m_text.setText(ss.str());
 }
 

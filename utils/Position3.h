@@ -3,13 +3,19 @@
 
 #include <functional>
 
-struct Position3
+template <typename T>
+struct Position3_
 {
-    Position3() = default;
-    Position3(int x, int y, int z) : x(x), y(y), z(z) {}
-    int x {0}, y {0}, z {0};
-    bool operator==(const Position3 &other) const;
+    Position3_() = default;
+    Position3_(T x, T y, T z) : x(x), y(y), z(z) {}
+    T x {(T)0}, y {(T)0}, z {(T)0};
+    bool operator==(const Position3_ &other) const {
+        return x == other.x && y == other.y && z == other.z;
+    }
 };
+
+using Position3  = Position3_<int>;
+using Position3f = Position3_<float>;
 
 namespace std
 {
