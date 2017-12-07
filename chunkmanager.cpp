@@ -227,14 +227,14 @@ void ChunkManager::render(const glm::mat4& proj_view)
         if (chunk.empty())
             continue;
 
-        auto p = chunk.getPosition();
+        auto p = chunk.getIndex();
+        glm::vec3 min = glm::vec3{p.x * Blocks::CX, p.y * Blocks::CY, p.z * Blocks::CZ};
+        glm::vec3 max = min + glm::vec3{Blocks::CX, Blocks::CY, Blocks::CZ};
 
-        constexpr static float chunkRad = std::sqrt(Blocks::CX * Blocks::CX + Blocks::CY * Blocks::CY + Blocks::CZ * Blocks::CZ) / 2.0f;
-        glm::vec3 chunkCenter{(p.x + 0.5f) * Blocks::CX, (p.y + 0.5f) * Blocks::CY, (p.z + 0.5f) * Blocks::CZ};
-        if (Frustrum::Outside == m_frustrum.checkSphere(chunkCenter, chunkRad))
+        if (Frustrum::Outside == m_frustrum.checkBox({min, max}))
             continue;
 
-        glm::mat4 model = glm::translate(glm::mat4(1), glm::vec3(p.x * Blocks::CX, p.y * Blocks::CY, p.z * Blocks::CZ));
+        glm::mat4 model = glm::translate(glm::mat4(1), min);
         m_shader->setMat4("model", &model[0][0]);
 
         if (chunk.changed() && chunksUpdated < m_config.world().maxUpdatesPerFrame)

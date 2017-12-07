@@ -2,14 +2,12 @@
 #define FRUSTRUM_H_INCLUDED
 
 #include <glm/vec3.hpp>
+#include "geometry.h"
 
 class Frustrum
 {
 public:
-    enum Result
-    {
-        Inside, Outside, Intersect
-    };
+    enum Result {Inside, Outside, Intersect};
 
                         Frustrum() = default;
 
@@ -22,19 +20,11 @@ public:
 
     int checkPoint   (const glm::vec3& p) const;
     int checkSphere  (const glm::vec3& center, float rad) const;
-//    int checkBox     (/*Box b*/) const;
+    int checkBox     (const Geom::AABB& box) const;
 
 private:
-    float               distanceToPlane(const glm::vec3& point, int plane) const;
-
-private:
-    struct Plane
-    {
-        glm::vec3 norm;
-        glm::vec3 point;
-    };
-    enum class Planes { Near = 0, Far, Top, Bottom, Left, Right };
-    Plane m_planes[6];
+    enum class Planes {Near = 0, Far, Top, Bottom, Left, Right};
+    Geom::Plane m_planes[6];
 };
 
 #endif // FRUSTRUM_H_INCLUDED

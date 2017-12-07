@@ -24,9 +24,7 @@
 
 
 Application::Application()
-    : m_camera(glm::vec3{0.0f, 100.0f, 0.0f},
-               180.0f, -20.0f)
-    , m_chunkManager(m_frustrum)
+    : m_chunkManager(m_frustrum)
     , m_config(Settings::get())
 {
     initGL();

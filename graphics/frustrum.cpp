@@ -5,8 +5,8 @@
 
 int Frustrum::checkPoint(const glm::vec3& p) const
 {
-    for (int i = 0; i < 6; i++)
-        if (distanceToPlane(p, i) < 0.0f)
+    for (const auto& plane : m_planes)
+        if (Geom::distanceToPlane(p, plane) < 0.0f)
             return Outside;
     return Inside;
 }
@@ -15,9 +15,9 @@ int Frustrum::checkSphere(const glm::vec3& center, float rad) const
 {
     bool intersect = false;
 
-    for (int i = 0; i < 6; i++)
+    for (const auto& plane : m_planes)
     {
-        float dist = distanceToPlane(center, i);
+        float dist = Geom::distanceToPlane(center, plane);
 
         if (dist < -rad)
             return Outside;
@@ -29,15 +29,39 @@ int Frustrum::checkSphere(const glm::vec3& center, float rad) const
     return Inside;
 }
 
-float Frustrum::distanceToPlane(const glm::vec3& point, int plane) const
+int Frustrum::checkBox(const Geom::AABB& box) const
 {
-    // Ax + By + Cz = -D;
-    // (A,B,C) = n; (x,y,z) = p => D = - n dot p; (p is point on plane (Plane.point in our case))
-    // distance_to_point = plane_normal dot point + D;
+    bool intersect = false;
 
-    const Plane& pln = m_planes[plane];
-    float D = -glm::dot(pln.norm, pln.point);
-    return glm::dot(pln.norm, point) + D;
+    for (const auto& plane : m_planes)
+    {
+        /* The positive vertex is the vertex from the box
+        that is further along the normal’s direction.
+        The negative vertex is the opposite vertex.*/
+
+        glm::vec3 negVert = box.max;
+        glm::vec3 posVert = box.min;
+
+        if (plane.norm.x > 0) {
+            negVert.x = box.min.x;
+            posVert.x = box.max.x;
+        }
+        if (plane.norm.y > 0) {
+            negVert.y = box.min.y;
+            posVert.y = box.max.y;
+        }
+        if (plane.norm.z > 0) {
+            negVert.z = box.min.z;
+            posVert.z = box.max.z;
+        }
+        if (Geom::distanceToPlane(posVert, plane) < 0)
+            return Outside;
+        if (distanceToPlane(negVert, plane) < 0)
+            intersect = true;
+    }
+    if (intersect)
+        return Intersect;
+    return Inside;
 }
 
 void Frustrum::updatePlanes(const glm::vec3& cam_pos,
