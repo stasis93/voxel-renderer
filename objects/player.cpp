@@ -1,60 +1,60 @@
 #include "player.h"
 #include "camera.h"
 #include "chunkmanager.h"
-#include "collision.h"
+#include "playercontrols.h"
+#include "outline.h"
+#include "geometry.h"
 
 #include <glm/detail/func_geometric.hpp>
 #include <vector>
 #include <cmath>
-#include <iostream>
 
-constexpr glm::vec3 Up {0, 1, 0};
-//constexpr glm::vec3 Size {0.5, 2.9, 0.5};
-//constexpr glm::vec3 Cam {Size.x * 0.5, Size.y, Size.z * 0.5};
+constexpr glm::vec3 Head {0, 1.4, 0};
 
-void Player::move(Dir dir, float offset)
+Player::Player(PControl control)
 {
-    switch (dir)
-    {
-    case Forward:
-        m_movementVec = m_dir;
-        break;
-    case Back:
-        m_movementVec = -m_dir;
-        break;
-    case Left:
-        m_movementVec = glm::normalize(glm::cross(Up, m_dir));
-        break;
-    case Right:
-        m_movementVec = -glm::normalize(glm::cross(Up, m_dir));
-        break;
-    default:
-        break;
-    }
-    m_movementVec *= offset;
-    //m_posPlanned = m_pos + offset * m_vel;
-//    setPosition(m_pos + offset * m_vel);
+    setControl(std::move(control));
 }
 
-void Player::update()
+void Player::setControl(PControl control)
 {
-    processCollisionsWithWorld();
+    glm::vec3 pos {0, 0, 0};
+    glm::vec3 dir {0, 0, 1};
+    if (m_control) {
+        pos = m_control->getPosition();
+        dir = m_control->getDirection();
+    }
+    m_control.reset();
+    m_control = std::move(control);
+    m_control->setPlayer(this);
+    m_control->setPosition(pos);
+    m_control->setDirection(dir);
+}
+
+void Player::move(AbstractPlayerControl::Dir dir, float offset)
+{
+    m_control->move(dir, offset);
+}
+
+void Player::update(float dt)
+{
+    m_control->update(dt);
     if (m_camera)
-        m_camera->setPosition(m_pos);
-    m_movementVec = {0, 0, 0};
+        m_camera->setPosition(m_control->getPosition() + Head);
 }
 
 void Player::setPosition(glm::vec3 pos)
 {
-//    m_movementVec = pos - m_pos;
-    m_pos = pos;
+    m_control->setPosition(pos);
+    if (m_camera)
+        m_camera->setPosition(pos + Head);
 }
 
 void Player::rotate(float offsYaw, float offsPitch)
 {
     if (m_camera) {
         m_camera->rotate(offsYaw, offsPitch);
-        m_dir = m_camera->getDirection();
+        m_control->setDirection(m_camera->getDirection());
     }
 }
 
@@ -62,7 +62,7 @@ void Player::setRotation(float yaw, float pitch)
 {
     if (m_camera) {
         m_camera->setRotation(yaw, pitch);
-        m_dir = m_camera->getDirection();
+        m_control->setDirection(m_camera->getDirection());
     }
 }
 
@@ -70,14 +70,19 @@ void Player::setDirection(glm::vec3 dir)
 {
     if (m_camera) {
         m_camera->setDirection(dir);
-        m_dir = dir;
+        m_control->setDirection(dir);
     }
+}
+
+void Player::jump()
+{
+    m_control->jump();
 }
 
 void Player::bindCamera(Camera* camera)
 {
     m_camera = camera;
-    m_camera->setPosition(m_pos);
+    m_camera->setPosition(m_control->getPosition() + Head);
 }
 
 void Player::setWorldData(ChunkManager* chunkManager)
@@ -85,38 +90,75 @@ void Player::setWorldData(ChunkManager* chunkManager)
     m_world = chunkManager;
 }
 
-glm::vec3 Player::getPosition() const
+ChunkManager* Player::getWorldData() const
 {
-    return m_pos;
+    return m_world;
 }
 
-void Player::processCollisionsWithWorld()
+glm::vec3 Player::getPosition() const
 {
-    int xmin = std::floor(m_pos.x) - 2;
-    int xmax = std::floor(m_pos.x) + 2;
-    int ymin = std::floor(m_pos.y) - 2;
-    int ymax = std::floor(m_pos.y) + 2;
-    int zmin = std::floor(m_pos.z) - 2;
-    int zmax = std::floor(m_pos.z) + 2;
+    return m_control->getPosition();
+}
 
-    Collision::Packet packet;
-    packet.basePoint = m_pos;
-    packet.velocity = m_movementVec;
+void Player::render()
+{
+    int radius = 5;
 
-    std::vector<Geom::Triangle> triangles;
+    glm::vec3 head = m_control->getPosition() + Head;
+    glm::vec3 dir = m_control->getDirection();
+
+    int headx = std::floor(head.x);
+    int heady = std::floor(head.y);
+    int headz = std::floor(head.z);
+
+    int xmin = headx - radius;
+    int ymin = heady - radius;
+    int zmin = headz - radius;
+
+    int xmax = xmin + 2 * radius + 1;
+    int ymax = ymin + 2 * radius + 1;
+    int zmax = zmin + 2 * radius + 1;
+
+    glm::vec3 target;
+    bool found = false;
+    float distance = radius * 2;
 
     for (int x = xmin; x <= xmax; x++)
     for (int y = ymin; y <= ymax; y++)
     for (int z = zmin; z <= zmax; z++)
     {
-        auto block = static_cast<Blocks::Type>(m_world->get({x, y, z}));
-        if (block != Blocks::Type::None && block != Blocks::Type::Water)
+        if ((headx - x) * (headx - x) + (heady - y) * (heady - y) + (headz - z) * (headz - z) > radius * radius)
+            continue;
+
+        if (m_world->get({x, y, z}) == static_cast<uint8_t>(Blocks::Type::None) ||
+            m_world->get({x, y, z}) == static_cast<uint8_t>(Blocks::Type::Water))
+            continue;
+
+        Geom::AABB box({x, y, z}, {x + 1, y + 1, z + 1});
+        auto triangles = Geom::trianglesFromAABB(box);
+        for (Geom::Triangle& triangle : triangles)
         {
-            Geom::AABB blockBox({x, y, z}, {x + 1, y + 1, z + 1});
-            auto boxTriangles = Geom::trianglesFromAABB(blockBox);
-            triangles.insert(std::end(triangles), std::begin(boxTriangles), std::end(boxTriangles));
+            Geom::Plane plane = Geom::planeFromTriangle(triangle);
+            float distanceCurrent;
+            bool intersects = Geom::vecIntersectsPlane(plane, head, dir, distanceCurrent);
+            if (intersects)
+            {
+                auto point = head + dir * distanceCurrent;
+                if (Geom::isPointInside(point, box) && distanceCurrent < distance)
+                {
+                    distance = distanceCurrent;
+                    target = glm::vec3(x, y, z);
+                    found = true;
+                }
+            }
         }
     }
-    Collision::collide(packet, triangles);
-    m_pos = packet.finalPosition;
+
+    if (found)
+        Outline::render(Geom::AABB(target - glm::vec3(0.01, 0.01, 0.01),
+                                   target + glm::vec3(1.01, 1.01, 1.01)));
 }
+
+
+
+

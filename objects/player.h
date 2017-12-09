@@ -1,38 +1,44 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include <memory>
 #include <glm/vec3.hpp>
-#include "geometry.h"
+#include "playercontrols.h"
+#include "renderable.h"
+
+using PControl = std::unique_ptr<AbstractPlayerControl>;
 
 class Camera;
 class ChunkManager;
 
-class Player
+class Player : public Renderable
 {
 public:
     Player() = default;
+    Player(PControl control);
 
-    enum Dir {Forward, Back, Left, Right};
-    void move(Dir dir, float offset);
+    void setControl(PControl control);
+
+    void move(AbstractPlayerControl::Dir dir, float offset);
+    void jump();
     void setPosition(glm::vec3 pos);
+    glm::vec3 getPosition() const;
     void rotate(float offsYaw, float offsPitch);
     void setRotation(float yaw, float pitch);
     void setDirection(glm::vec3 dir);
+
     void bindCamera(Camera* camera);
+
     void setWorldData(ChunkManager* chunkManager);
-    glm::vec3 getPosition() const;
+    ChunkManager* getWorldData() const;
 
-    void update();
-
-private:
-    void processCollisionsWithWorld();
+    void update(float dt);
+    void render();
 
 private:
+    PControl    m_control;
     Camera*     m_camera {nullptr};
-    ChunkManager* m_world  {nullptr};
-    glm::vec3   m_pos {0, 0, 0},
-                m_dir {0, 0, 1},
-                m_movementVec {0, 0, 0};
+    ChunkManager* m_world {nullptr};
 };
 
 #endif // PLAYER_H

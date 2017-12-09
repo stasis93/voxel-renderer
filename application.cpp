@@ -54,9 +54,10 @@ Application::Application()
 
     Utils::glCheckError();
 
+    m_player.setControl(std::make_unique<WalkingControl>());
     m_player.bindCamera(&m_camera);
     m_player.setWorldData(&m_chunkManager);
-    m_player.setPosition({0, 100, 0});
+    m_player.setPosition({Random::intInRange(-100, 100), 100, Random::intInRange(-100, 100)});
     m_player.setDirection({0, 0, 1});
 }
 
@@ -135,6 +136,16 @@ void Application::keyCallback(int key, int action)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(m_window, GLFW_TRUE);
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+        m_player.jump();
+    if (key == GLFW_KEY_F1 && action == GLFW_PRESS)
+        m_player.setControl(std::make_unique<FlyingControl>());
+    if (key == GLFW_KEY_F2 && action == GLFW_PRESS)
+        m_player.setControl(std::make_unique<WalkingControl>());
+    if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_PRESS) {
+        m_fpsCounter.toggleActive();
+        m_info.toggleActive();
+    }
 }
 
 void Application::cursorPosCallback(double x, double y)
@@ -196,7 +207,7 @@ void Application::update(float dt_sec)
     const glm::vec3& camDir = m_camera.getDirection();
     const glm::vec3& playerPos = m_player.getPosition();
     m_chunkManager.update({(int)playerPos.x, (int)playerPos.y, (int)playerPos.z});
-    m_player.update();
+    m_player.update(dt_sec);
 
     m_info.setPositionInfo(playerPos.x, playerPos.y, playerPos.z);
     m_info.setViewDirectionInfo(camDir.x, camDir.y, camDir.z);
@@ -206,18 +217,18 @@ void Application::handleKbd(float dt)
 {
     float dist = dt * 10;
     if (glfwGetKey(m_window, GLFW_KEY_LEFT_SHIFT))
-        dist *= 10.0f;
+        dist *= 2.0f;
     else if (glfwGetKey(m_window, GLFW_KEY_LEFT_CONTROL))
         dist /= 10.0f;
 
     if (glfwGetKey(m_window, GLFW_KEY_W))
-        m_player.move(Player::Forward, dist);
+        m_player.move(AbstractPlayerControl::Forward, dist);
     else if (glfwGetKey(m_window, GLFW_KEY_S))
-        m_player.move(Player::Back, dist);
+        m_player.move(AbstractPlayerControl::Back, dist);
     if (glfwGetKey(m_window, GLFW_KEY_A))
-        m_player.move(Player::Left, dist);
+        m_player.move(AbstractPlayerControl::Left, dist);
     else if (glfwGetKey(m_window, GLFW_KEY_D))
-        m_player.move(Player::Right, dist);
+        m_player.move(AbstractPlayerControl::Right, dist);
 }
 
 void Application::render()
