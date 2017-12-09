@@ -3,14 +3,12 @@
 
 #include <unordered_map>
 #include <vector>
-#include <memory>
 #include <queue>
 #include <glm/mat4x4.hpp>
 
 #include "chunk.h"
-#include "shader.h"
-#include "texture.h"
 #include "timer.h"
+#include "renderable.h"
 
 
 using ChunkColumn = std::vector<Chunk>;
@@ -19,7 +17,7 @@ using ChunkColumnMap = std::unordered_map<Position3, ChunkColumn>;
 class Frustrum;
 class Settings;
 
-struct ChunkManager
+struct ChunkManager : public Renderable, public WithTexture, public WithShader, Transformable
 {
     ChunkManager(Frustrum& frustrum);
 
@@ -27,10 +25,9 @@ struct ChunkManager
     void            set(const Position3& pos, uint8_t type);
 
     void            update(const Position3 &playerPosition);
-    void            render(const glm::mat4 &proj_view);
+    void            render();
 
-    void            setShader(std::unique_ptr<Shader> pShader);
-    void            setBlockTexture(std::unique_ptr<Texture> pTexture);
+    void            setTransform(const glm::mat4& transform);
 
     Chunk*          getChunk(const Position3& index);
 
@@ -50,9 +47,6 @@ private:
     int                         m_loadRadius,
                                 m_chunkColsLoaded {0};
     Position3                   m_oldPlayerPos;
-
-    std::unique_ptr<Shader>     m_shader {nullptr};
-    std::unique_ptr<Texture>    m_blockTexture {nullptr};
 
     bool                        m_loadingDone {false};
     Frustrum&                   m_frustrum;

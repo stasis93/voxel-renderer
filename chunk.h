@@ -4,6 +4,7 @@
 #include <cstdint>
 #include "constants.h"
 #include "position3.h"
+#include "renderable.h"
 
 namespace Blocks
 {
@@ -23,7 +24,7 @@ enum class Type
 
 class ChunkManager;
 
-class Chunk
+class Chunk : Renderable
 {
 public:
                     Chunk(ChunkManager* manager, Position3 index);

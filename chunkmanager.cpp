@@ -1,13 +1,12 @@
 #include "chunkmanager.h"
 
 #include <memory>
-#include <iostream>
+//#include <iostream>
 #include <algorithm>
 #include <cstring>
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "shader.h"
 #include "heightmapprovider.h"
 #include "utils.h"
 #include "frustrum.h"
@@ -24,6 +23,13 @@ ChunkManager::ChunkManager(Frustrum& frustrum)
     if (m_config.world().maxChunkColsLoaded < minChunkColsLoaded)
         m_config.world().maxChunkColsLoaded = minChunkColsLoaded;
     m_renderList.reserve(minChunkColsLoaded);
+    m_chunkColumns.reserve(m_config.world().maxChunkColsLoaded);
+}
+
+void ChunkManager::setTransform(const glm::mat4& transform)
+{
+    m_shader->use();
+    m_shader->setMat4("proj_view", &transform[0][0]);
 }
 
 void ChunkManager::update(const Position3 &playerPosition)
@@ -79,7 +85,7 @@ void ChunkManager::update(const Position3 &playerPosition)
 
             HeightMapProvider::fillChunkColumn(newColumn);
 
-            auto ins = m_chunkColumns.emplace(std::make_pair(pos, std::move(newColumn)));
+            auto ins = m_chunkColumns.emplace(pos, std::move(newColumn));
             assert(ins.second);
 
             auto colPtr = &ins.first->second;
@@ -93,8 +99,8 @@ void ChunkManager::update(const Position3 &playerPosition)
     if (m_chunkColsLoaded == 0)
     {
         m_loadingDone = true;
-        std::cout << "Chunk columns loaded: " << m_chunkColumns.size() << std::endl;
-        std::cout << "Adjacent column updates queued: " << m_adjacentUpdateQueue.size() << std::endl;
+//        std::cout << "Chunk columns loaded: " << m_chunkColumns.size() << std::endl;
+//        std::cout << "Adjacent column updates queued: " << m_adjacentUpdateQueue.size() << std::endl;
     }
     unloadSpareChunkColumns();
     updateAdjacent();
@@ -162,7 +168,7 @@ Chunk* ChunkManager::getChunk(const Position3& index)
     return &(*column)[index.y];
 }
 
-ChunkColumn* ChunkManager::getColumn(const Position3 &index)
+ChunkColumn* ChunkManager::getColumn(const Position3& index)
 {
     auto it = m_chunkColumns.find(index);
 
@@ -226,12 +232,11 @@ void ChunkManager::set(const Position3& pos, uint8_t type)
     ch->setRaw({x, y, z}, type);
 }
 
-void ChunkManager::render(const glm::mat4& proj_view)
+void ChunkManager::render()
 {
+    m_texture->bind();
     m_shader->use();
-    m_shader->setMat4("proj_view", &proj_view[0][0]);
     m_shader->setFloat("time", m_timer.getElapsedSecs());
-    m_blockTexture->bind();
 
     int chunksUpdated = 0;
 
@@ -258,16 +263,6 @@ void ChunkManager::render(const glm::mat4& proj_view)
         }
         chunk.render();
     }
-}
-
-void ChunkManager::setBlockTexture(std::unique_ptr<Texture> pTexture)
-{
-    m_blockTexture = std::move(pTexture);
-}
-
-void ChunkManager::setShader(std::unique_ptr<Shader> pShader)
-{
-    m_shader = std::move(pShader);
 }
 
 void ChunkManager::fillLookupIndexBuffer()

@@ -69,21 +69,15 @@ void Skybox::initialize()
     }
 }
 
-void Skybox::setShader(std::unique_ptr<Shader> pShader)
-{
-    m_shader = std::move(pShader);
-}
-
-void Skybox::setTexture(std::unique_ptr<Texture> pTexture)
-{
-    m_texture = std::move(pTexture);
-}
-
-void Skybox::render(const glm::mat4& transform)
+void Skybox::setTransform(const glm::mat4& transform)
 {
     m_shader->use();
     m_shader->setMat4("vp", &transform[0][0]);
+}
 
+void Skybox::render()
+{
+    m_shader->use();
     glDepthFunc(GL_LEQUAL);
 
     glBindVertexArray(m_vao);

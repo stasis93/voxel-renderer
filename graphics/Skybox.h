@@ -4,24 +4,20 @@
 #include <glm/mat4x4.hpp>
 #include <memory>
 
-#include "texture.h"
-#include "shader.h"
+#include "renderable.h"
 #include "noncopyable.h"
 
-class Skybox : NonCopyable
+class Skybox : public Renderable, public WithTexture, public WithShader, Transformable, NonCopyable
 {
 public:
     Skybox() = default;
     ~Skybox();
 
     void initialize();
-    void setShader(std::unique_ptr<Shader> pShader);
-    void setTexture(std::unique_ptr<Texture> pTexture);
-    void render(const glm::mat4& transform);
+    void setTransform(const glm::mat4& transform);
+    void render();
 
 private:
-    std::unique_ptr<Shader> m_shader {nullptr};
-    std::unique_ptr<Texture> m_texture {nullptr};
     unsigned int m_vao {0}, m_vbo {0};
 };
 
