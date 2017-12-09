@@ -39,7 +39,6 @@ void render(const Geom::AABB& box)
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof elements, elements, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
-    glBindVertexArray(0);
 
     glm::vec3 size {box.max - box.min};
     glm::vec3 center {(box.max + box.min) * 0.5f};
@@ -49,14 +48,12 @@ void render(const Geom::AABB& box)
     shader.use();
     shader.setMat4("model", &modelMatrix[0][0]);
 
-    glBindVertexArray(vao);
 
     glDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 0);
     glDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, (GLvoid*)(4 * sizeof(GLushort)));
     glDrawElements(GL_LINES, 8, GL_UNSIGNED_SHORT, (GLvoid*)(8 * sizeof(GLushort)));
 
     glBindVertexArray(0);
-
     glDeleteBuffers(1, &vbo);
     glDeleteBuffers(1, &ibo);
     glDeleteVertexArrays(1, &vao);
