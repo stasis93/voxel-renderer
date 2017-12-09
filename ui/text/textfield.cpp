@@ -31,7 +31,8 @@ void TextField::setString(const std::string& str)
 
 void TextField::render()
 {
-    m_text.render();
+    if (m_active)
+        m_text.render();
 }
 
 std::string TextField::string() const
@@ -47,4 +48,9 @@ void TextField::setFontSize(unsigned size)
 void TextField::setColor(float r, float g, float b)
 {
     m_text.setColor(r, g, b);
+}
+
+void TextField::toggleActive()
+{
+    m_active = !m_active;
 }

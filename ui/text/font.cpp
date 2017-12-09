@@ -1,7 +1,7 @@
 #include "font.h"
 
-#include <iostream>
 #include <cmath>
+#include <iostream >
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -50,8 +50,6 @@ void Font::initGLStuff()
 {
     if (!m_glStuffInitialized)
     {
-        std::cout << __FUNCTION__ << std::endl;
-
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glGenVertexArrays(1, &m_vao);
         glBindVertexArray(m_vao);
@@ -81,7 +79,6 @@ void Font::loadFromFile(const std::string& file)
 
 void Font::loadGlyphData()
 {
-    std::cout << __FUNCTION__ << std::endl;
     initGLStuff();
     clearGlyphData();
 

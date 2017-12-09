@@ -11,9 +11,9 @@ namespace Collision
 
 struct Packet
 {
-    glm::vec3 velocity,         // in
-              basePoint,        // in
-              finalPosition;    // out
+    glm::vec3 velocity,                 // in
+              basePoint,                // in
+              finalPosition;            // out
 
 private:
 //    glm::vec3 velocityNew,

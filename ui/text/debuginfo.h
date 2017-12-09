@@ -12,7 +12,6 @@ public:
     void setViewDirectionInfo(float x, float y, float z);
     void setDrawCallCount(int count);
     void setTriangleCount(int count);
-
     void render();
 
 private:

@@ -46,10 +46,13 @@ void DebugInfo::updateText()
 
 void DebugInfo::render()
 {
-    if (m_textNeedsUpdate)
+    if (m_active)
     {
-        updateText();
-        m_textNeedsUpdate = false;
+        if (m_textNeedsUpdate)
+        {
+            updateText();
+            m_textNeedsUpdate = false;
+        }
+        TextField::render();
     }
-    TextField::render();
 }

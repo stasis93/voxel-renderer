@@ -75,7 +75,6 @@ void Camera::update()
 
 void Camera::setDirection(const glm::vec3& direction)
 {
-    auto dir = glm::normalize(direction);
     m_yaw = glm::degrees(std::atan2(direction.z, direction.x));
 
     float xz_len = std::sqrt(direction.z * direction.z + direction.x * direction.x);

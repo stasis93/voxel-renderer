@@ -4,7 +4,6 @@
 #include <glm/vec3.hpp>
 #include <glm/detail/func_geometric.hpp>
 #include <array>
-#include <vector>
 
 namespace Geom
 {
@@ -52,7 +51,9 @@ struct Sphere
 
 std::array<Plane, 6> planesFromAABB(const AABB& box);
 
-std::vector<Triangle> trianglesFromAABB(const AABB& box);
+std::array<Triangle, 12> trianglesFromAABB(const AABB& box);
+
+bool isPointInside(const glm::vec3& point, const AABB& box);
 
 float distanceToPlane(const glm::vec3& point, const Plane& plane);
 

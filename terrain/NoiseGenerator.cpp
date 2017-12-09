@@ -18,8 +18,9 @@ NoiseGenerator::NoiseGenerator(double flatTerrainFreq,
 
 void NoiseGenerator::setSeed(int seed)
 {
-    m_mountainTerrain.SetSeed(seed);
+    m_terrainType.SetSeed(seed);
     m_baseFlatTerrain.SetSeed(seed);
+    m_mountainTerrain.SetSeed(seed);
 }
 
 void NoiseGenerator::apply()

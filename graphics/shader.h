@@ -10,6 +10,7 @@ class Shader : NonCopyable
 {
 public:
     Shader() = default;
+    Shader(char const * vertexFilename, char const * fragmentFilename);
     ~Shader();
 
     void load(char const * vertexFilename, char const * fragmentFilename);

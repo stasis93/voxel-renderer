@@ -18,7 +18,7 @@ void init(int seed)
 
 static Blocks::Type chooseBlock(float c);
 
-void fillChunkColumn(std::vector<Chunk> &column)
+void fillChunkColumn(std::vector<Chunk>& column)
 {
     const Position3& colPos = column[0].getIndex();
 

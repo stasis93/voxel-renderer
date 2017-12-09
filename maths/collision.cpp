@@ -2,7 +2,7 @@
 #include <cmath>
 #include <iostream>
 
-constexpr float Eps = 1e-4f;
+constexpr float Eps = 1e-3f;
 
 namespace Collision
 {
@@ -17,6 +17,9 @@ inline bool isZero(float val, float eps = Eps)
     return (val > -eps && val < eps);
 }
 
+/*
+    Used Kasper Fauerby's algorithm "Improved Collision Detection and Response"
+*/
 void checkTriangle(Packet& packet, const Triangle& triangle)
 {
     Plane plane = planeFromTriangle(triangle);
@@ -43,7 +46,7 @@ void checkTriangle(Packet& packet, const Triangle& triangle)
         t1 = (-1 - distance) / n_dot_vel;
         if (t0 > t1)
             std::swap(t0, t1);
-        if (!isInRange(t0, 0.0f, 1.0f) && !isInRange(t1, 0.0f, 1.0f))
+        if (!isInRange(t0, 0.0f, 1.0f) && !isInRange(t1, 0.0f, 1.0f) && (std::abs(distance) >= 1.0f))
             return;
         // Clamp to [0, 1]
         t0 = t0 < 0 ? 0 : t0 > 1 ? 1 : t0;
@@ -167,19 +170,19 @@ void checkTriangles(Packet& packet, const std::vector<Triangle>& triangles)
 void collide(Packet& packet, const std::vector<Triangle>& triangles)
 {
     int depth = 0;
+    float velLength;
     do {
+        velLength = glm::length(packet.velocity);
+        if (velLength < Eps)
+            break;
         checkTriangles(packet, triangles);
     } while (packet.foundCollision && ++depth < 5);
+//    std::cout << depth << std::endl;
 
-    float velLength = glm::length(packet.velocity);
     if (velLength < Eps)
-    {
         packet.finalPosition = packet.basePoint;
-    }
     else
-    {
         packet.finalPosition = packet.basePoint + (packet.velocity / velLength) * packet.nearestDistance;
-    }
 }
 
 

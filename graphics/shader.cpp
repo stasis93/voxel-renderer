@@ -5,6 +5,11 @@
 #include "utils.h"
 
 
+Shader::Shader(char const* vertexFilename, char const* fragmentFilename)
+{
+    load(vertexFilename, fragmentFilename);
+}
+
 void Shader::load(char const* vertexFilename, char const* fragmentFilename)
 {
     if (m_id != 0)

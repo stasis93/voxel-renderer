@@ -30,7 +30,6 @@ Chunk::Chunk(ChunkManager* manager, Position3 index)
     glBindVertexArray(m_vao);
     glGenBuffers(1, &m_vbo);
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    glBufferData(GL_ARRAY_BUFFER, CX * CY * CZ * 6 * 6, nullptr, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 4, GL_BYTE, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
 }
@@ -160,7 +159,7 @@ void Chunk::updateVBO()
     {
         m_empty = false;
         glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, m_elements * sizeof *vertices, vertices);
+        glBufferData(GL_ARRAY_BUFFER, m_elements * sizeof *vertices, vertices, GL_STATIC_DRAW);
     }
     else
         m_empty = true;

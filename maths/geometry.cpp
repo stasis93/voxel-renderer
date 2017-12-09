@@ -47,7 +47,7 @@ std::array<Plane, 6> planesFromAABB(const AABB& box)
     };
 }
 
-std::vector<Triangle> trianglesFromAABB(const AABB& box)
+std::array<Triangle, 12> trianglesFromAABB(const AABB& box)
 {
     float x0 = box.min.x, x1 = box.max.x,
           y0 = box.min.y, y1 = box.max.y,
@@ -74,6 +74,13 @@ std::vector<Triangle> trianglesFromAABB(const AABB& box)
         Triangle({x0, y0, z1}, {x1, y0, z1}, {x1, y1, z1}),
         Triangle({x0, y0, z1}, {x1, y1, z1}, {x0, y1, z1})
     };
+}
+
+bool isPointInside(const glm::vec3& point, const AABB& box)
+{
+    return point.x >= box.min.x && point.x <= box.max.x &&
+           point.y >= box.min.y && point.y <= box.max.y &&
+           point.z >= box.min.z && point.z <= box.max.z;
 }
 
 bool vecIntersectsPlane(const Plane& plane,
