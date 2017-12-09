@@ -181,6 +181,8 @@ void Application::resizeCallback(int width, int height)
 {
     updateProjectionMatrix(width, height);
     glViewport(0, 0, width, height);
+    m_crosshair.setTransform(glm::ortho(0.0f, (float)width, 0.0f, (float)height));
+    m_crosshair.setPosition(width / 2 - 8, height / 2 - 8);
 }
 
 void Application::run()

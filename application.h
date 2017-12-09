@@ -9,10 +9,10 @@
 #include "chunkmanager.h"
 #include "timer.h"
 #include "frustrum.h"
-#include "Skybox.h"
+#include "skybox.h"
 #include "fpscounter.h"
 #include "debuginfo.h"
-
+#include "crosshair.h"
 
 class Settings;
 class GLFWwindow;
@@ -56,6 +56,7 @@ private:
 
     FPSCounter              m_fpsCounter;
     DebugInfo               m_info;
+    Crosshair               m_crosshair;
 
     double                  m_xprev {0},
                             m_yprev {0};
