@@ -21,6 +21,7 @@
 #include "settings.h"
 #include "textureloader.h"
 #include "drawcalltrack.h"
+#include "resourcemanager.h"
 
 
 Application::Application()
@@ -36,18 +37,35 @@ Application::Application()
     shader->load(ShaderFiles::vertex_shader_chunk, ShaderFiles::fragment_shader_chunk);
     shader->use();
     shader->setInt("blockTexture", 0);
-
-    m_chunkManager.setShader(std::move(shader));
-    m_chunkManager.setBlockTexture(TextureLoader::loadTexture(m_config.world().blockTextureName));
+    ResourceManager::shaders().insert("chunk", std::move(shader));
 
     shader = std::make_unique<Shader>();
     shader->load(ShaderFiles::vertex_shader_skybox, ShaderFiles::fragment_shader_skybox);
     shader->use();
     shader->setInt("skybox", 0);
+    ResourceManager::shaders().insert("skybox", std::move(shader));
+
+    shader = std::make_unique<Shader>();
+    shader->load("shaders/ui2d_vs.glsl", "shaders/ui2d_fs.glsl");
+    shader->use();
+    shader->setInt("tex", 0);
+    ResourceManager::shaders().insert("crosshair", std::move(shader));
+
+    shader = std::make_unique<Shader>("shaders/outline_vs.glsl", "shaders/outline_fs.glsl");
+    ResourceManager::shaders().insert("outline", std::move(shader));
+
+    ResourceManager::textures().insert("blocks", TextureLoader::loadTexture(m_config.world().blockTextureName));
+    ResourceManager::textures().insert("skybox", TextureLoader::loadCubeMap(m_config.skyboxNames(), false));
+    ResourceManager::textures().insert("crosshair", TextureLoader::loadTexture("textures/crosshair.png"));
 
     m_skyBox.initialize();
-    m_skyBox.setShader(std::move(shader));
-    m_skyBox.setTexture(TextureLoader::loadCubeMap(m_config.skyboxNames(), false));
+    m_skyBox.setShader(ResourceManager::shaders().get("skybox"));
+    m_crosshair.initialize();
+    m_crosshair.setShader(ResourceManager::shaders().get("crosshair"));
+    m_chunkManager.setShader(ResourceManager::shaders().get("chunk"));
+    m_chunkManager.setTexture(ResourceManager::textures().get("blocks"));
+    m_skyBox.setTexture(ResourceManager::textures().get("skybox"));
+    m_crosshair.setTexture(ResourceManager::textures().get("crosshair"));
 
     m_fpsCounter.setContext(m_window);
     m_info.setContext(m_window);
@@ -59,6 +77,8 @@ Application::Application()
     m_player.setWorldData(&m_chunkManager);
     m_player.setPosition({Random::intInRange(-100, 100), 100, Random::intInRange(-100, 100)});
     m_player.setDirection({0, 0, 1});
+
+    resizeCallback(m_config.rendering().width, m_config.rendering().height);
 }
 
 void Application::initGL()
@@ -243,10 +263,18 @@ void Application::render()
 
     m_view = m_camera.getViewMatrix();
 
-    m_chunkManager.render(m_proj * m_view);
-    m_skyBox.render(m_proj * glm::mat4(glm::mat3(m_view)));
+    m_chunkManager.setTransform(m_proj * m_view);
+    m_skyBox.setTransform(m_proj * glm::mat4(glm::mat3(m_view)));
+    Shader& outlineShader = ResourceManager::shaders().get("outline");
+    outlineShader.use();
+    outlineShader.setMat4("proj_view", &(m_proj * m_view)[0][0]);
+
+    m_chunkManager.render();
+    m_skyBox.render();
     m_fpsCounter.render();
     m_info.render();
+    m_crosshair.render();
+    m_player.render();
 
     glfwSwapBuffers(m_window);
     Utils::glCheckError();
