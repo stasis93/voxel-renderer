@@ -101,7 +101,7 @@ void WalkingControl::processCollisionsWithWorld()
     int zmin = std::floor(m_pos.z) - std::ceil(BodyRadius.z);
     int zmax = std::floor(m_pos.z) + std::ceil(BodyRadius.z);
 
-    // Extract triangles for testing from these blocks
+    // Extract triangles from these blocks for testing
     std::vector<Geom::Triangle> triangles;
     triangles.reserve((xmax - xmin + 1) * (ymax - ymin + 1) * (zmax - zmin + 1));
 
@@ -117,6 +117,7 @@ void WalkingControl::processCollisionsWithWorld()
             triangles.insert(std::end(triangles), std::begin(boxTriangles), std::end(boxTriangles));
         }
     }
+    // Transform to new stretched space where player is a sphere
     for (Triangle& t : triangles) {
         t.p1 /= BodyRadius;
         t.p2 /= BodyRadius;
@@ -125,20 +126,20 @@ void WalkingControl::processCollisionsWithWorld()
     // Process possible collisions
     Collision::Packet packet;
 
-    packet.basePoint = m_pos / BodyRadius;
-    packet.velocity = m_movementVec / BodyRadius;
-
-    Collision::collide(packet, triangles);
+    packet.setBasePosition(m_pos / BodyRadius);
+    packet.setVelocity(m_movementVec / BodyRadius);
+    auto posBeforeGravity = packet.testAgainstTriangles(triangles);
 
     // Second pass for gravity
-    packet.basePoint = packet.finalPosition;
-    packet.velocity = glm::vec3 {0, m_verticalVelocity, 0};
+    packet.setBasePosition(posBeforeGravity);
+    packet.setVelocity(glm::vec3 {0, m_verticalVelocity, 0});
+    auto newPos = packet.testAgainstTriangles(triangles);
 
-    Collision::collide(packet, triangles);
-    m_pos = packet.finalPosition * BodyRadius;
+    // Transform final position back to normal space
+    m_pos = newPos * BodyRadius;
 
     // If not flying, reset vertical velocity
-    float delta_y = packet.finalPosition.y - packet.basePoint.y;
+    float delta_y = newPos.y - posBeforeGravity.y;
     if (delta_y == 0) {
         m_verticalVelocity = 0.0f;
         m_inAir = false;

@@ -9,25 +9,25 @@ using namespace Geom;
 namespace Collision
 {
 
-struct Packet
+class Packet
 {
-    glm::vec3 velocity,                 // in
-              basePoint,                // in
-              finalPosition;            // out
+public:
+    void setBasePosition(const glm::vec3& basePoint);
+    void setVelocity(const glm::vec3& velocity);
+    glm::vec3 testAgainstTriangles(const std::vector<Triangle>& trianglesToTest);
 
 private:
-    bool foundCollision {false};
-    float nearestDistance;
-    glm::vec3 intersectionPoint;
+    void checkTriangle(const Triangle& triangle);
+    void checkTriangles(const std::vector<Triangle>& triangles);
 
-    friend void collide(Packet& packet, const std::vector<Triangle>& triangles);
-    friend void checkTriangle(Packet& packet, const Triangle& triangle);
-    friend void checkTriangles(Packet& packet, const std::vector<Triangle>& triangles);
+private:
+    bool m_foundCollision {false};
+    float m_nearestDistance;
+    glm::vec3 m_intersectionPoint,
+              m_velocity,
+              m_basePoint,
+              m_finalPosition;
 };
 
-
-void collide(Packet& packet, const std::vector<Triangle>& triangles);
-
 }
-
 #endif // COLLISION_H_INCLUDED

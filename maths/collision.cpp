@@ -20,18 +20,18 @@ inline bool isZero(float val, float eps = Eps)
 /*
     Used Kasper Fauerby's algorithm "Improved Collision Detection and Response"
 */
-void checkTriangle(Packet& packet, const Triangle& triangle)
+void Packet::checkTriangle(const Triangle& triangle)
 {
     Plane plane = triangle.getPlane();
 
-    if (!plane.isFrontFacingToVec(packet.velocity))
+    if (!plane.isFrontFacingToVec(m_velocity))
         return;
 
     float t0, t1;
     bool embedded = false;
 
-    float distance = plane.distanceToPoint(packet.basePoint);
-    float n_dot_vel = glm::dot(plane.norm, packet.velocity);
+    float distance = plane.distanceToPoint(m_basePoint);
+    float n_dot_vel = glm::dot(plane.norm, m_velocity);
 
     if (isZero(n_dot_vel))
     {
@@ -61,8 +61,8 @@ void checkTriangle(Packet& packet, const Triangle& triangle)
 
     if (!embedded)
     {
-        glm::vec3 planeIntersectionPoint = packet.basePoint -
-        plane.norm + t0 * packet.velocity;
+        glm::vec3 planeIntersectionPoint = m_basePoint -
+        plane.norm + t0 * m_velocity;
 
         if (triangle.isPointInside(planeIntersectionPoint))
         {
@@ -74,8 +74,8 @@ void checkTriangle(Packet& packet, const Triangle& triangle)
     if (!foundCollision)
     {
         // Check against triangle vertices
-        auto& vel = packet.velocity;
-        auto& base = packet.basePoint;
+        auto& vel = m_velocity;
+        auto& base = m_basePoint;
         float vel_lenSquared = squaredLength(vel);
 
         std::pair<float, float> roots;
@@ -130,57 +130,69 @@ void checkTriangle(Packet& packet, const Triangle& triangle)
     if (foundCollision)
     {
 //        std::cout << "  t = " << t << std::endl;
-        float distToCollision = t * glm::length(packet.velocity);
-        if (!packet.foundCollision || distToCollision < packet.nearestDistance)
+        float distToCollision = t * glm::length(m_velocity);
+        if (!m_foundCollision || distToCollision < m_nearestDistance)
         {
-            packet.nearestDistance = distToCollision;
-            packet.intersectionPoint = collisionPoint;
-            packet.foundCollision = true;
+            m_nearestDistance = distToCollision;
+            m_intersectionPoint = collisionPoint;
+            m_foundCollision = true;
         }
     }
 } // end checkTriangle
 
-void checkTriangles(Packet& packet, const std::vector<Triangle>& triangles)
+void Packet::checkTriangles(const std::vector<Triangle>& triangles)
 {
-    packet.foundCollision = false;
-    packet.nearestDistance = glm::length(packet.velocity);
+    m_foundCollision = false;
+    m_nearestDistance = glm::length(m_velocity);
 
     for (const Triangle& t : triangles)
-        checkTriangle(packet, t);
+        checkTriangle(t);
 
-    if (!packet.foundCollision)
+    if (!m_foundCollision)
         return;
 
-    auto velocityNormalized = glm::normalize(packet.velocity);
-    auto baseAtIntersect = packet.basePoint + velocityNormalized * packet.nearestDistance;
-    auto normal = baseAtIntersect - packet.intersectionPoint;
+    auto velocityNormalized = glm::normalize(m_velocity);
+    auto baseAtIntersect = m_basePoint + velocityNormalized * m_nearestDistance;
+    auto normal = baseAtIntersect - m_intersectionPoint;
 
-    Plane slidingPlane(normal, packet.intersectionPoint);
+    Plane slidingPlane(normal, m_intersectionPoint);
 
-    auto plannedPosition = packet.basePoint + packet.velocity;
+    auto plannedPosition = m_basePoint + m_velocity;
     auto plannedPositionProj = slidingPlane.projectPoint(plannedPosition);
-    auto slidingVel = plannedPositionProj - packet.intersectionPoint;
+    auto slidingVel = plannedPositionProj - m_intersectionPoint;
 
-    packet.velocity = slidingVel;
-    packet.basePoint = baseAtIntersect;
+    m_velocity = slidingVel;
+    m_basePoint = baseAtIntersect;
 }
 
-void collide(Packet& packet, const std::vector<Triangle>& triangles)
+void Packet::setBasePosition(const glm::vec3& basePoint)
+{
+    m_basePoint = basePoint;
+}
+
+void Packet::setVelocity(const glm::vec3& velocity)
+{
+    m_velocity = velocity;
+}
+
+glm::vec3 Packet::testAgainstTriangles(const std::vector<Triangle>& trianglesToTest)
 {
     int depth = 0;
     float velLength;
     do {
-        velLength = glm::length(packet.velocity);
+        velLength = glm::length(m_velocity);
         if (velLength < Eps)
             break;
-        checkTriangles(packet, triangles);
-    } while (packet.foundCollision && ++depth < 5);
+        checkTriangles(trianglesToTest);
+    } while (m_foundCollision && ++depth < 5);
 //    std::cout << depth << std::endl;
 
     if (velLength < Eps)
-        packet.finalPosition = packet.basePoint;
+        m_finalPosition = m_basePoint;
     else
-        packet.finalPosition = packet.basePoint + (packet.velocity / velLength) * packet.nearestDistance;
+        m_finalPosition = m_basePoint + (m_velocity / velLength) * m_nearestDistance;
+
+    return m_finalPosition;
 }
 
 
