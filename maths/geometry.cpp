@@ -6,87 +6,26 @@
 namespace Geom
 {
 
-float distanceToPlane(const glm::vec3& point, const Plane& plane)
+float Plane::distanceToPoint(const glm::vec3& point) const
 {
     // Ax + By + Cz = -D;
     // (A,B,C) = n; (x,y,z) = p => D = - n dot p; (p is point on plane (Plane.point in our case))
     // distance_to_point = plane_normal dot point + D;
-    float D = -glm::dot(plane.norm, plane.point);
-    return glm::dot(plane.norm, point) + D;
+    return glm::dot(this->norm, point - this->point);
 }
 
-glm::vec3 projectPointToPlane(const glm::vec3& point, const Plane& plane)
+glm::vec3 Plane::projectPoint(const glm::vec3& point) const
 {
-    float distance = distanceToPlane(point, plane);
-    return point - plane.norm * distance;
+    float distance = this->distanceToPoint(point);
+    return point - this->norm * distance;
 }
 
-bool AABB::intersects(const AABB& box)
+bool Plane::isFrontFacingToVec(const glm::vec3& vector) const
 {
-    if ((max.x < box.min.x || box.max.x < min.x) ||
-        (max.y < box.min.y || box.max.y < min.y) ||
-        (max.z < box.min.z || box.max.z < min.z))
-        return false;
-    return true;
+    return glm::dot(norm, vector) < 0;
 }
 
-std::array<Plane, 6> planesFromAABB(const AABB& box)
-{  /* Extract planes from axis-aligned bounding box */
-    float bx = box.max.x - box.min.x,
-          by = box.max.y - box.min.y,
-          bz = box.max.z - box.min.z;
-
-    return {
-        /*  normal vector  |       point on plane                            */
-        Plane({ 0,  0, -1}, {box.min.x      , box.min.y      , box.min.z}),
-        Plane({ 0,  0,  1}, {box.min.x      , box.min.y      , box.min.z + bz}),
-        Plane({ 0, -1,  0}, {box.min.x      , box.min.y      , box.min.z}),
-        Plane({ 0,  1,  0}, {box.min.x      , box.min.y + by , box.min.z}),
-        Plane({-1,  0,  0}, {box.min.x      , box.min.y      , box.min.z}),
-        Plane({ 1,  0,  0}, {box.min.x + bx , box.min.y      , box.min.z})
-    };
-}
-
-std::array<Triangle, 12> trianglesFromAABB(const AABB& box)
-{
-    float x0 = box.min.x, x1 = box.max.x,
-          y0 = box.min.y, y1 = box.max.y,
-          z0 = box.min.z, z1 = box.max.z;
-
-    /* Extract triangles from each face... */
-    return {
-        // view from -x
-        Triangle({x0, y0, z0}, {x0, y0, z1}, {x0, y1, z1}),
-        Triangle({x0, y0, z0}, {x0, y1, z1}, {x0, y1, z0}),
-        // view from +x
-        Triangle({x1, y0, z1}, {x1, y0, z0}, {x1, y1, z0}),
-        Triangle({x1, y0, z1}, {x1, y1, z0}, {x1, y1, z1}),
-        // view from -y
-        Triangle({x0, y0, z0}, {x1, y0, z0}, {x1, y0, z1}),
-        Triangle({x0, y0, z0}, {x1, y0, z1}, {x0, y0, z1}),
-        // view from +y
-        Triangle({x0, y1, z1}, {x1, y1, z1}, {x1, y1, z0}),
-        Triangle({x0, y1, z1}, {x1, y1, z0}, {x0, y1, z0}),
-        // view from -z
-        Triangle({x1, y0, z0}, {x0, y0, z0}, {x0, y1, z0}),
-        Triangle({x1, y0, z0}, {x0, y1, z0}, {x1, y1, z0}),
-        // view from +z
-        Triangle({x0, y0, z1}, {x1, y0, z1}, {x1, y1, z1}),
-        Triangle({x0, y0, z1}, {x1, y1, z1}, {x0, y1, z1})
-    };
-}
-
-bool isPointInside(const glm::vec3& point, const AABB& box)
-{
-    return point.x >= box.min.x && point.x <= box.max.x &&
-           point.y >= box.min.y && point.y <= box.max.y &&
-           point.z >= box.min.z && point.z <= box.max.z;
-}
-
-bool vecIntersectsPlane(const Plane& plane,
-                        const glm::vec3& position,
-                        const glm::vec3& direction,
-                        float& distBeforeIntersect)
+bool Plane::vectorIntersects(const glm::vec3& start, const glm::vec3& direction, float& distBeforeIntersect) const
 {
     /*
     [From http://nehe.gamedev.net/tutorial/collision_detection/17005/]
@@ -115,11 +54,11 @@ bool vecIntersectsPlane(const Plane& plane,
     */
     static constexpr float Eps = 1e-3f;
 
-    float dot = glm::dot(plane.norm, direction);
+    float dot = glm::dot(norm, direction);
     if (dot > -Eps && dot < Eps) // if direction is parallel with plane
         return false;
 
-    float len = glm::dot(plane.norm, plane.point - position) / dot;
+    float len = glm::dot(norm, point - start) / dot;
     if (len < -Eps) // if collision is behind
         return false;
 
@@ -127,47 +66,89 @@ bool vecIntersectsPlane(const Plane& plane,
     return true;
 }
 
-float squaredLength(const glm::vec3& vec)
+// ===========================================================
+
+bool AABB::intersects(const AABB& box) const
 {
-    return vec.x * vec.x + vec.y * vec.y + vec.z * vec.z;
+    if ((max.x < box.min.x || box.max.x < min.x) ||
+        (max.y < box.min.y || box.max.y < min.y) ||
+        (max.z < box.min.z || box.max.z < min.z))
+        return false;
+    return true;
 }
 
-Plane planeFromTriangle(const Triangle& triangle)
+bool AABB::isPointInside(const glm::vec3& point) const
 {
-    glm::vec3 u = triangle.p2 - triangle.p1,
-              v = triangle.p3 - triangle.p1;
+    return point.x >= min.x && point.x <= max.x &&
+           point.y >= min.y && point.y <= max.y &&
+           point.z >= min.z && point.z <= max.z;
+}
+
+std::array<Plane, 6> AABB::getPlanes() const
+{
+    float bx = max.x - min.x,
+          by = max.y - min.y,
+          bz = max.z - min.z;
+
+    return {
+        /*  normal vector  |       point on plane               */
+        Plane({ 0,  0, -1}, {min.x      , min.y      , min.z}),
+        Plane({ 0,  0,  1}, {min.x      , min.y      , min.z + bz}),
+        Plane({ 0, -1,  0}, {min.x      , min.y      , min.z}),
+        Plane({ 0,  1,  0}, {min.x      , min.y + by , min.z}),
+        Plane({-1,  0,  0}, {min.x      , min.y      , min.z}),
+        Plane({ 1,  0,  0}, {min.x + bx , min.y      , min.z})
+    };
+}
+
+std::array<Triangle, 12> AABB::getTriangles() const
+{
+    float x0 = min.x, x1 = max.x,
+          y0 = min.y, y1 = max.y,
+          z0 = min.z, z1 = max.z;
+
+    /* Extract triangles from each face... */
+    return {
+        // view from -x
+        Triangle({x0, y0, z0}, {x0, y0, z1}, {x0, y1, z1}),
+        Triangle({x0, y0, z0}, {x0, y1, z1}, {x0, y1, z0}),
+        // view from +x
+        Triangle({x1, y0, z1}, {x1, y0, z0}, {x1, y1, z0}),
+        Triangle({x1, y0, z1}, {x1, y1, z0}, {x1, y1, z1}),
+        // view from -y
+        Triangle({x0, y0, z0}, {x1, y0, z0}, {x1, y0, z1}),
+        Triangle({x0, y0, z0}, {x1, y0, z1}, {x0, y0, z1}),
+        // view from +y
+        Triangle({x0, y1, z1}, {x1, y1, z1}, {x1, y1, z0}),
+        Triangle({x0, y1, z1}, {x1, y1, z0}, {x0, y1, z0}),
+        // view from -z
+        Triangle({x1, y0, z0}, {x0, y0, z0}, {x0, y1, z0}),
+        Triangle({x1, y0, z0}, {x0, y1, z0}, {x1, y1, z0}),
+        // view from +z
+        Triangle({x0, y0, z1}, {x1, y0, z1}, {x1, y1, z1}),
+        Triangle({x0, y0, z1}, {x1, y1, z1}, {x0, y1, z1})
+    };
+}
+
+// ===========================================================
+
+Plane Triangle::getPlane() const
+{
+    glm::vec3 u = p2 - p1,
+              v = p3 - p1;
     Plane plane;
     plane.norm = glm::normalize(glm::cross(u, v));
-    plane.point = triangle.p1;
+    plane.point = p1;
     return plane;
 }
 
-bool isPlaneFrontFacingToVec(const Plane& plane, const glm::vec3& vec)
-{
-    return glm::dot(plane.norm, vec) < 0;
-}
-
-bool onSameSide(const glm::vec3& p1, const glm::vec3& p2, const Edge& line)
-{
-    auto cross1 = glm::cross(line.point2 - line.point1, p1 - line.point1);
-    auto cross2 = glm::cross(line.point2 - line.point1, p2 - line.point1);
-    return glm::dot(cross1, cross2) >= 0;
-}
-
-bool isPointInTriangle(const glm::vec3& point, const Triangle& triangle)
+bool Triangle::isPointInside(const glm::vec3& point) const
 {
     /* http://blackpawn.com/texts/pointinpoly/ */
-
-//    if (onSameSide(point, triangle.p3, {triangle.p1, triangle.p2}) &&
-//        onSameSide(point, triangle.p1, {triangle.p2, triangle.p3}) &&
-//        onSameSide(point, triangle.p2, {triangle.p3, triangle.p1}))
-//            return true;
-//    return false;
-
     // compute vectors
-    auto v0 = triangle.p3 - triangle.p1;
-    auto v1 = triangle.p2 - triangle.p1;
-    auto v2 = point - triangle.p1;
+    auto v0 = p3 - p1;
+    auto v1 = p2 - p1;
+    auto v2 = point - p1;
 
     // compute dot products
     float dot00 = glm::dot(v0, v0);
@@ -184,6 +165,18 @@ bool isPointInTriangle(const glm::vec3& point, const Triangle& triangle)
     // check if point is in triangle
     return u >= 0 && v >= 0 && u + v <= 1;
 }
+
+std::array<glm::vec3, 3> Triangle::getPoints() const
+{
+    return {p1, p2, p3};
+}
+
+std::array<Line, 3> Triangle::getEdges() const
+{
+    return {Line(p1, p2), Line(p2, p3), Line(p3, p1)};
+}
+
+// ===========================================================
 
 bool solveQuadEquation(float a, float b, float c, std::pair<float, float>& roots)
 {
@@ -204,6 +197,11 @@ bool solveQuadEquation(float a, float b, float c, std::pair<float, float>& roots
     roots.second = r2;
 
     return true;
+}
+
+float squaredLength(const glm::vec3& vec)
+{
+    return vec.x * vec.x + vec.y * vec.y + vec.z * vec.z;
 }
 
 }

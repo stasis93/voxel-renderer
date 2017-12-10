@@ -135,16 +135,16 @@ void Player::render()
             continue;
 
         Geom::AABB box({x, y, z}, {x + 1, y + 1, z + 1});
-        auto triangles = Geom::trianglesFromAABB(box);
+        auto triangles = box.getTriangles();
         for (Geom::Triangle& triangle : triangles)
         {
-            Geom::Plane plane = Geom::planeFromTriangle(triangle);
+            Geom::Plane plane = triangle.getPlane();
             float distanceCurrent;
-            bool intersects = Geom::vecIntersectsPlane(plane, head, dir, distanceCurrent);
+            bool intersects = plane.vectorIntersects(head, dir, distanceCurrent);
             if (intersects)
             {
                 auto point = head + dir * distanceCurrent;
-                if (Geom::isPointInside(point, box) && distanceCurrent < distance)
+                if (box.isPointInside(point) && distanceCurrent < distance)
                 {
                     distance = distanceCurrent;
                     target = glm::vec3(x, y, z);

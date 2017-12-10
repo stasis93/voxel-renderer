@@ -46,9 +46,10 @@ void render(const Geom::AABB& box)
     glm::mat4 modelMatrix = glm::translate(glm::mat4(1), center) * glm::scale(glm::mat4(1), size);
     auto& shader = ResourceManager::shaders().get("outline");
     shader.use();
+    shader.setVec3("color", 0, 0, 0);
     shader.setMat4("model", &modelMatrix[0][0]);
 
-
+    glLineWidth(2);
     glDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 0);
     glDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, (GLvoid*)(4 * sizeof(GLushort)));
     glDrawElements(GL_LINES, 8, GL_UNSIGNED_SHORT, (GLvoid*)(8 * sizeof(GLushort)));

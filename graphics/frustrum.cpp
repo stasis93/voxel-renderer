@@ -6,7 +6,7 @@
 int Frustrum::checkPoint(const glm::vec3& p) const
 {
     for (const auto& plane : m_planes)
-        if (Geom::distanceToPlane(p, plane) < 0.0f)
+        if (plane.distanceToPoint(p) < 0.0f)
             return Outside;
     return Inside;
 }
@@ -17,7 +17,7 @@ int Frustrum::checkSphere(const glm::vec3& center, float rad) const
 
     for (const auto& plane : m_planes)
     {
-        float dist = Geom::distanceToPlane(center, plane);
+        float dist = plane.distanceToPoint(center);
 
         if (dist < -rad)
             return Outside;
@@ -54,9 +54,9 @@ int Frustrum::checkBox(const Geom::AABB& box) const
             negVert.z = box.min.z;
             posVert.z = box.max.z;
         }
-        if (Geom::distanceToPlane(posVert, plane) < 0)
+        if (plane.distanceToPoint(posVert) < 0)
             return Outside;
-        if (distanceToPlane(negVert, plane) < 0)
+        if (plane.distanceToPoint(negVert) < 0)
             intersect = true;
     }
     if (intersect)

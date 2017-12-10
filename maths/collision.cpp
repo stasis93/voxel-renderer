@@ -22,15 +22,15 @@ inline bool isZero(float val, float eps = Eps)
 */
 void checkTriangle(Packet& packet, const Triangle& triangle)
 {
-    Plane plane = planeFromTriangle(triangle);
+    Plane plane = triangle.getPlane();
 
-    if (!isPlaneFrontFacingToVec(plane, packet.velocity))
+    if (!plane.isFrontFacingToVec(packet.velocity))
         return;
 
     float t0, t1;
     bool embedded = false;
 
-    float distance = distanceToPlane(packet.basePoint, plane);
+    float distance = plane.distanceToPoint(packet.basePoint);
     float n_dot_vel = glm::dot(plane.norm, packet.velocity);
 
     if (isZero(n_dot_vel))
@@ -64,7 +64,7 @@ void checkTriangle(Packet& packet, const Triangle& triangle)
         glm::vec3 planeIntersectionPoint = packet.basePoint -
         plane.norm + t0 * packet.velocity;
 
-        if (isPointInTriangle(planeIntersectionPoint, triangle))
+        if (triangle.isPointInside(planeIntersectionPoint))
         {
             foundCollision = true;
             t = t0;
@@ -82,7 +82,7 @@ void checkTriangle(Packet& packet, const Triangle& triangle)
         float a = vel_lenSquared;
         float b, c;
 
-        for (const auto& p : {triangle.p1, triangle.p2, triangle.p3})
+        for (const auto& p : triangle.getPoints())
         {
             b = glm::dot(vel, base - p) * 2;
             c = squaredLength(p - base) - 1;
@@ -95,9 +95,7 @@ void checkTriangle(Packet& packet, const Triangle& triangle)
             }
         }
         // Check against triangle edges
-        for (const Edge& edge : {Edge {triangle.p1, triangle.p2},
-                                 Edge {triangle.p2, triangle.p3},
-                                 Edge {triangle.p3, triangle.p1}})
+        for (const auto& edge : triangle.getEdges())
         {
             auto edgeVec = edge.point2 - edge.point1;
             auto baseToVertex = edge.point1 - base;
@@ -160,7 +158,7 @@ void checkTriangles(Packet& packet, const std::vector<Triangle>& triangles)
     Plane slidingPlane(normal, packet.intersectionPoint);
 
     auto plannedPosition = packet.basePoint + packet.velocity;
-    auto plannedPositionProj = projectPointToPlane(plannedPosition, slidingPlane);
+    auto plannedPositionProj = slidingPlane.projectPoint(plannedPosition);
     auto slidingVel = plannedPositionProj - packet.intersectionPoint;
 
     packet.velocity = slidingVel;

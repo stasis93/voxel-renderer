@@ -16,9 +16,6 @@ struct Packet
               finalPosition;            // out
 
 private:
-//    glm::vec3 velocityNew,
-//              basePointNew;
-
     bool foundCollision {false};
     float nearestDistance;
     glm::vec3 intersectionPoint;

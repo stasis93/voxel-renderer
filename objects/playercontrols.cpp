@@ -113,7 +113,7 @@ void WalkingControl::processCollisionsWithWorld()
         if (block != Blocks::Type::None && block != Blocks::Type::Water)
         {
             Geom::AABB blockBox({x, y, z}, {x + 1, y + 1, z + 1});
-            auto boxTriangles = Geom::trianglesFromAABB(blockBox);
+            auto boxTriangles = blockBox.getTriangles();
             triangles.insert(std::end(triangles), std::begin(boxTriangles), std::end(boxTriangles));
         }
     }
