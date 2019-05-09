@@ -4,7 +4,6 @@ project(voxel)
 set(CMAKE_CXX_STANDARD 17)
 
 file(GLOB_RECURSE SRC "*.cpp" "*.c")
-message(SRC=${SRC})
 
 add_executable(${PROJECT_NAME} ${SRC})
 
@@ -14,3 +13,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     /usr/include/freetype2)
 
 target_link_libraries(${PROJECT_NAME} glfw noise freetype dl)
+
+foreach(DIR fonts shaders textures)
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory
+                           ${CMAKE_SOURCE_DIR}/${DIR} $<TARGET_FILE_DIR:${PROJECT_NAME}>/${DIR})
+endforeach()
