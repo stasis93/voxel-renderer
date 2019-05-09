@@ -10,18 +10,18 @@
 #include <thread>
 #endif
 
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "stb_image.h"
+#include "3rdparty/stb_image.h"
+#include "glad/glad.h"
 
-#include "constants.h"
-#include "utils.h"
-#include "random.h"
-#include "heightmapprovider.h"
+#include "utils/constants.h"
+#include "utils/utils.h"
+#include "utils/random.h"
+#include "terrain/heightmapprovider.h"
 #include "settings.h"
-#include "textureloader.h"
-#include "drawcalltrack.h"
-#include "resourcemanager.h"
+#include "graphics//textureloader.h"
+#include "utils/drawcalltrack.h"
+#include "utils/resourcemanager.h"
 
 
 Application::Application()

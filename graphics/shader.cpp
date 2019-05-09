@@ -2,7 +2,7 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
-#include "utils.h"
+#include "utils/utils.h"
 
 
 Shader::Shader(char const* vertexFilename, char const* fragmentFilename)

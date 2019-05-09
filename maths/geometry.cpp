@@ -1,6 +1,6 @@
 #include "geometry.h"
 
-#include <glm/detail/func_geometric.hpp>
+#include <glm/geometric.hpp>
 #include <cmath>
 
 namespace Geom

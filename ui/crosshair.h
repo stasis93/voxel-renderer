@@ -1,7 +1,7 @@
 #ifndef CROSSHAIR_H
 #define CROSSHAIR_H
 
-#include "renderable.h"
+#include "graphics/renderable.h"
 
 class Crosshair : public Renderable, public WithTexture, public WithShader, Transformable
 {

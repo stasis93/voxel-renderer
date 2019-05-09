@@ -2,7 +2,7 @@
 #define FRUSTRUM_H_INCLUDED
 
 #include <glm/vec3.hpp>
-#include "geometry.h"
+#include "maths/geometry.h"
 
 class Frustrum
 {

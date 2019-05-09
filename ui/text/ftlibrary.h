@@ -1,7 +1,7 @@
 #ifndef FTLIBRARY_H
 #define FTLIBRARY_H
 
-#include "../utils/noncopyable.h"
+#include "utils/noncopyable.h"
 
 class FT_LibraryRec_;
 using FT_Library = FT_LibraryRec_*;

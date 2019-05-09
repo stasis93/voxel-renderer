@@ -2,7 +2,7 @@
 #define GEOMETRY_H_INCLUDED
 
 #include <glm/vec3.hpp>
-#include <glm/detail/func_geometric.hpp>
+#include <glm/geometric.hpp>
 #include <array>
 
 namespace Geom

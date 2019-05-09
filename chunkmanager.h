@@ -7,8 +7,8 @@
 #include <glm/mat4x4.hpp>
 
 #include "chunk.h"
-#include "timer.h"
-#include "renderable.h"
+#include "graphics/renderable.h"
+#include "utils/timer.h"
 
 
 using ChunkColumn = std::vector<Chunk>;

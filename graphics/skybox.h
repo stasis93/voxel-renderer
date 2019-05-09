@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "renderable.h"
-#include "noncopyable.h"
+#include "utils/noncopyable.h"
 
 class Skybox : public Renderable, public WithTexture, public WithShader, Transformable, NonCopyable
 {

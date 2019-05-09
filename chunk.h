@@ -2,9 +2,9 @@
 #define CHUNK_H_INCLUDED
 
 #include <cstdint>
-#include "constants.h"
-#include "position3.h"
-#include "renderable.h"
+#include "graphics/renderable.h"
+#include "utils/constants.h"
+#include "utils/position3.h"
 
 namespace Blocks
 {

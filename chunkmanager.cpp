@@ -7,10 +7,10 @@
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "heightmapprovider.h"
-#include "utils.h"
-#include "frustrum.h"
+#include "graphics/frustrum.h"
 #include "settings.h"
+#include "terrain/heightmapprovider.h"
+#include "utils/utils.h"
 
 
 ChunkManager::ChunkManager(Frustrum& frustrum)

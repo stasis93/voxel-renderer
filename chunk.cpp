@@ -4,8 +4,8 @@
 #include <glm/glm.hpp>
 #include <cassert>
 
-#include "utils.h"
-#include "drawcalltrack.h"
+#include "utils/utils.h"
+#include "utils/drawcalltrack.h"
 
 using byte4 = glm::tvec4<GLbyte>;
 

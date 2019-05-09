@@ -3,8 +3,8 @@
 
 #include <map>
 #include <string>
-#include "shader.h"
-#include "noncopyable.h"
+#include "graphics/shader.h"
+#include "utils/noncopyable.h"
 
 // Just copying from FT headers to make forward-declaring possible
 class FT_FaceRec_;

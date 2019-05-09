@@ -1,6 +1,6 @@
 #include "heightmapprovider.h"
 #include "noisegenerator.h"
-#include "random.h"
+#include "utils/random.h"
 #include "../chunk.h"
 
 #include <iostream>

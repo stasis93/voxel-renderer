@@ -3,8 +3,8 @@
 
 #include "noncopyable.h"
 #include "resourceholder.h"
-#include "shader.h"
-#include "texture.h"
+#include "graphics/shader.h"
+#include "graphics/texture.h"
 
 using ShaderHolder = ResourceHolder<Shader, std::string>;
 using TextureHolder = ResourceHolder<Texture, std::string>;

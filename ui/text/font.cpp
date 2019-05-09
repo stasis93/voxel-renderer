@@ -1,7 +1,7 @@
 #include "font.h"
 
 #include <cmath>
-#include <iostream >
+#include <iostream>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -12,7 +12,7 @@
 #include "text.h"
 #include "ftlibrary.h"
 
-#include "drawcalltrack.h"
+#include "utils/drawcalltrack.h"
 
 Font::Font(GLFWwindow* context)
     : m_context(context)

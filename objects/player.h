@@ -4,7 +4,7 @@
 #include <memory>
 #include <glm/vec3.hpp>
 #include "playercontrols.h"
-#include "renderable.h"
+#include "graphics/renderable.h"
 
 using PControl = std::unique_ptr<AbstractPlayerControl>;
 

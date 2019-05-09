@@ -2,7 +2,7 @@
 #define FPSCOUNTER_H
 
 #include "textfield.h"
-#include "timer.h"
+#include "utils/timer.h"
 
 class FPSCounter : public TextField
 {

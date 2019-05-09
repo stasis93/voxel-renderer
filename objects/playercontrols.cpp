@@ -1,5 +1,5 @@
 #include "playercontrols.h"
-#include "collision.h"
+#include "maths/collision.h"
 #include "chunkmanager.h"
 #include "player.h"
 

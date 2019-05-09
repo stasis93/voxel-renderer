@@ -1,7 +1,7 @@
 #ifndef TERRAINGENERATOR_H
 #define TERRAINGENERATOR_H
 
-#include <noise/noise.h>
+#include <libnoise/noise.h>
 
 class NoiseGenerator
 {

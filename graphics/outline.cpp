@@ -1,6 +1,6 @@
 #include "outline.h"
-#include "geometry.h"
-#include "resourcemanager.h"
+#include "maths/geometry.h"
+#include "utils/resourcemanager.h"
 
 #include <glad/glad.h>
 #include <glm/mat4x4.hpp>

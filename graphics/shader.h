@@ -4,7 +4,7 @@
 #include "glad/glad.h"
 #include <string>
 
-#include "noncopyable.h"
+#include "utils/noncopyable.h"
 
 class Shader : NonCopyable
 {

@@ -3,16 +3,16 @@
 
 #include <glm/mat4x4.hpp>
 
-#include "shader.h"
-#include "player.h"
-#include "camera.h"
 #include "chunkmanager.h"
-#include "timer.h"
-#include "frustrum.h"
-#include "skybox.h"
-#include "fpscounter.h"
-#include "debuginfo.h"
-#include "crosshair.h"
+#include "graphics/camera.h"
+#include "graphics/frustrum.h"
+#include "graphics/shader.h"
+#include "graphics/skybox.h"
+#include "objects/player.h"
+#include "ui/crosshair.h"
+#include "ui/text/debuginfo.h"
+#include "ui/text/fpscounter.h"
+#include "utils/timer.h"
 
 class Settings;
 class GLFWwindow;

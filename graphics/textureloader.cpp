@@ -1,7 +1,7 @@
-#include "textureloader.h"
-#include <glad/glad.h>
 #include <iostream>
-#include "stb_image.h"
+#include <glad/glad.h>
+#include "3rdparty/stb_image.h"
+#include "textureloader.h"
 
 TexturePtr TextureLoader::loadTexture(const std::string& path, bool flipVertically)
 {

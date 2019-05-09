@@ -1,11 +1,11 @@
 #include "player.h"
-#include "camera.h"
+#include "graphics/camera.h"
 #include "chunkmanager.h"
 #include "playercontrols.h"
-#include "outline.h"
-#include "geometry.h"
+#include "graphics/outline.h"
+#include "maths/geometry.h"
 
-#include <glm/detail/func_geometric.hpp>
+#include <glm/geometric.hpp>
 #include <vector>
 #include <cmath>
 
