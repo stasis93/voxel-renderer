@@ -24,7 +24,7 @@ Settings& Settings::get()
 void Settings::setDefaults()
 {
     m_world.seed = 0;
-    m_world.blockTextureName = "textures/block.png";
+    m_world.blockTextureName = "textures/blocks.png";
     m_world.maxLoadsPerFrame = 5;
     m_world.maxUpdatesPerFrame = 10;
     m_world.maxExtraUpdatesPerFrame = 1;
@@ -39,12 +39,12 @@ void Settings::setDefaults()
     m_rendering.vsync = true;
 
     m_skyboxTexturePaths = {
-        "ame_greenhaze/greenhaze_rt.tga",
-        "ame_greenhaze/greenhaze_lf.tga",
-        "ame_greenhaze/greenhaze_up.tga",
-        "ame_greenhaze/greenhaze_dn.tga",
-        "ame_greenhaze/greenhaze_bk.tga",
-        "ame_greenhaze/greenhaze_ft.tga"
+        "textures/ame_greenhaze/greenhaze_rt.tga",
+        "textures/ame_greenhaze/greenhaze_lf.tga",
+        "textures/ame_greenhaze/greenhaze_up.tga",
+        "textures/ame_greenhaze/greenhaze_dn.tga",
+        "textures/ame_greenhaze/greenhaze_bk.tga",
+        "textures/ame_greenhaze/greenhaze_ft.tga"
     };
 }
 
@@ -66,22 +66,25 @@ void Settings::parse()
         if (line.empty() || line.at(0) == '#')
             continue;
 
+        if (line[line.size() - 1] == '\r')
+            line.pop_back();
+
         line.erase(std::remove(line.begin(), line.end(), ' '), line.end());
 
         using std::placeholders::_1;
         using std::placeholders::_2;
 
-        if (line == "[Skybox]")
+        if (line.find("[Skybox]") != line.npos)
         {
             parseLineFunc = std::bind(&Settings::parseSkyboxParam, this, _1, _2);
             continue;
         }
-        else if (line == "[World]")
+        else if (line.find("[World]") != line.npos)
         {
             parseLineFunc = std::bind(&Settings::parseWorldParam, this, _1, _2);
             continue;
         }
-        else if (line == "[Rendering]")
+        else if (line.find("[Rendering]") != line.npos)
         {
             parseLineFunc = std::bind(&Settings::parseRenderingParam, this, _1, _2);
             continue;

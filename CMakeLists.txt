@@ -14,8 +14,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 target_link_libraries(${PROJECT_NAME} glfw noise freetype dl)
 
-foreach(DIR fonts shaders textures)
+# symlink resources and config to build dir
+foreach(ITEM fonts shaders textures config.txt)
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy_directory
-                           ${CMAKE_SOURCE_DIR}/${DIR} $<TARGET_FILE_DIR:${PROJECT_NAME}>/${DIR})
+                       COMMAND ${CMAKE_COMMAND} -E create_symlink
+                           ${CMAKE_SOURCE_DIR}/${ITEM} $<TARGET_FILE_DIR:${PROJECT_NAME}>/${ITEM})
 endforeach()

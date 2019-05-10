@@ -24,8 +24,9 @@
 #include "utils/resourcemanager.h"
 
 
-Application::Application()
-    : m_chunkManager(m_frustrum)
+Application::Application(GLFWwindow* window)
+    : m_window(window)
+    , m_chunkManager(m_frustrum)
     , m_config(Settings::get())
 {
     initGL();
@@ -83,16 +84,6 @@ Application::Application()
 
 void Application::initGL()
 {
-    if (!glfwInit())
-        onError("glfwInit failed");
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    m_window = glfwCreateWindow(m_config.rendering().width,
-                                m_config.rendering().height,
-                                "Voxel world", nullptr, nullptr);
     int w, h;
     glfwGetWindowSize(m_window, &w, &h);
     updateProjectionMatrix(w, h);
@@ -142,14 +133,7 @@ void Application::registerCallbacks()
 void Application::onError(const char* msg)
 {
     std::cerr << msg << std::endl;
-    cleanUp();
     exit(EXIT_FAILURE);
-}
-
-void Application::cleanUp()
-{
-    glfwDestroyWindow(m_window);
-    glfwTerminate();
 }
 
 void Application::keyCallback(int key, int action)
@@ -297,7 +281,7 @@ void Application::updateProjectionMatrix(int width, int height)
         m_proj = glm::perspective(glm::radians((float)m_config.rendering().fovy), width / (float)height, 0.1f, 1000.0f);
 }
 
-Application::~Application()
-{
-    cleanUp();
+Application::~Application() {
+    ResourceManager::textures().clear();
+    ResourceManager::shaders().clear();
 }

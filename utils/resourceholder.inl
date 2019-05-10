@@ -32,3 +32,8 @@ Resource& ResourceHolder<Resource, ID>::get(const ID& key)
     return *iter->second;
 }
 
+template<typename Resource, typename ID>
+void ResourceHolder<Resource, ID>::clear()
+{
+    m_resources.clear();
+}

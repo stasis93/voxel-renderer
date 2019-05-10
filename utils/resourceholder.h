@@ -20,6 +20,7 @@ public:
     void remove(const ID& key);
 
     Resource& get(const ID& key);
+    void clear();
 
 private:
     std::map<ID, pResourse> m_resources;

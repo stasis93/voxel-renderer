@@ -20,8 +20,8 @@ class GLFWwindow;
 class Application
 {
 public:
-        Application();
-       ~Application();
+        Application(GLFWwindow* window);
+        ~Application();
 
     void run();
 
@@ -34,7 +34,6 @@ private:
     void pollEvents();
 
     void onError(const char* msg);
-    void cleanUp();
 
     void keyCallback(int key, int action);
     void cursorPosCallback(double x, double y);
@@ -46,7 +45,7 @@ private:
     void handleKbd(float dt_sec);
 
 private:
-    GLFWwindow*             m_window {nullptr};
+    GLFWwindow*             m_window;
 
     Player                  m_player;
     Camera                  m_camera;
