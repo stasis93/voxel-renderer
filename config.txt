@@ -1,0 +1,30 @@
+[Skybox]
+
+# Specify relative image paths
+
+posx = textures/ame_greenhaze/greenhaze_rt.tga
+negx = textures/ame_greenhaze/greenhaze_lf.tga
+posy = textures/ame_greenhaze/greenhaze_up.tga
+negy = textures/ame_greenhaze/greenhaze_dn.tga
+posz = textures/ame_greenhaze/greenhaze_bk.tga
+negz = textures/ame_greenhaze/greenhaze_ft.tga
+
+
+[World]
+
+blockTextures = textures/blocks.png
+seed = 0
+max_loads_per_frame = 1
+max_updates_per_frame = 1
+max_extra_updates_per_frame = 1
+max_chunk_cols_loaded = 2000
+chunks_in_column = 4
+
+[Rendering]
+
+window_width = 1152
+window_height = 864
+fovy = 40
+load_radius = 20
+fps_limit = 60
+vsync = 0
